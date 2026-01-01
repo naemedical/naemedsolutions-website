@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAE Medical Solutions - Affordable Healthcare Technology</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: #1a365d;
+            padding: 15px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: #4CAF50;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #4CAF50;
+        }
+
+.mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Dropdown Menu */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #1a365d;
+            border-radius: 5px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            min-width: 180px;
+            list-style: none;
+            padding: 10px 0;
+            margin-top: 10px;
+            z-index: 1001;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-menu li {
+            padding: 0;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .dropdown-menu a:hover {
+            background: #2d5a87;
+            color: #4CAF50;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1a365d 0%, #2d5a87 100%);
+            color: white;
+            padding: 150px 20px 100px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 48px);
+            margin-bottom: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero p {
+            font-size: clamp(16px, 2.5vw, 20px);
+            max-width: 700px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+
+        .hero-btn {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .hero-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        /* Sections */
+        section {
+            padding: 80px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(24px, 4vw, 36px);
+            color: #1a365d;
+            margin-bottom: 50px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* About Section */
+        #about {
+            background: #f8f9fa;
+        }
+
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .about-content p {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .mission-box {
+            background: white;
+            border-left: 4px solid #4CAF50;
+            padding: 30px;
+            margin-top: 40px;
+            text-align: left;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+
+        .mission-box h3 {
+            color: #1a365d;
+            margin-bottom: 15px;
+        }
+
+        /* Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            color: #1a365d;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .feature-card p {
+            color: #666;
+        }
+
+        /* Solutions Section */
+        #solutions {
+            background: #f8f9fa;
+        }
+
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .solution-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .solution-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .solution-header {
+            background: #1a365d;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .solution-header h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .solution-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .solution-body {
+            padding: 30px;
+        }
+
+        .solution-body p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .solution-btn {
+            display: block;
+            background: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .solution-btn:hover {
+            background: #45a049;
+        }
+
+        .coming-soon-card {
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+        }
+
+        .coming-soon-card .solution-header {
+            background: #666;
+        }
+
+        .coming-soon-card .solution-btn {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        /* Contact Section */
+        #contact {
+            background: white;
+        }
+
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .contact-info h3 {
+            color: #1a365d;
+            margin-bottom: 20px;
+        }
+
+        .contact-info p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .contact-email {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .email-icon {
+            font-size: 30px;
+        }
+
+        .contact-email a {
+            color: #1a365d;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .contact-email a:hover {
+            color: #4CAF50;
+        }
+
+        .contact-form {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #45a049;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a365d;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        footer p {
+            opacity: 0.8;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #1a365d;
+                flex-direction: column;
+                padding: 20px;
+                gap: 15px;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .contact-content {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 120px 20px 80px;
+            }
+
+            section {
+                padding: 60px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">NAE <span>Medical Solutions</span></a>
+            <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+<ul class="nav-links" id="navLinks">
+                <li><a onclick="showPage('home'); scrollToSection('about')">About</a></li>
+                <li><a onclick="showPage('home'); scrollToSection('features')">Why Us</a></li>
+                <li><a onclick="showPage('home'); scrollToSection('solutions')">Solutions</a></li>
+                <li class="dropdown">
+                    <a onclick="toggleDropdown(event)">Apps ▼</a>
+                    <ul class="dropdown-menu" id="appsDropdown">
+                        <li><a href="https://ophub.naemedsolutions.com" target="_blank">Operations Hub</a></li>
+                    </ul>
+                </li>
+                <li><a onclick="showPage('home'); scrollToSection('contact')">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>High-Quality Healthcare Technology at Prices That Make Sense</h1>
+        <p>Purpose-built solutions for critical access hospitals, rural EMS, and healthcare facilities that need professional tools without the premium price tag.</p>
+        <a href="#solutions" class="hero-btn">View Our Solutions</a>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="container">
+            <h2 class="section-title">About Us</h2>
+            <div class="about-content">
+                <p>At NAE Medical Solutions, we believe every healthcare facility deserves access to modern, efficient technology—regardless of size or budget.</p>
+                <p>We build custom solutions designed specifically for critical access hospitals, rural EMS agencies, and healthcare facilities that need high-quality tools but can't justify the cost of enterprise-grade pricing.</p>
+                <div class="mission-box">
+                    <h3>Our Mission</h3>
+                    <p>To bridge the technology gap in rural healthcare by delivering powerful, user-friendly solutions that improve operations, enhance communication, and respect your bottom line.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose Us</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>Honest Pricing</h3>
+                    <p>Professional features without the inflated costs. We understand rural healthcare budgets and price our solutions fairly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Built for You</h3>
+                    <p>Every facility is different. We customize solutions to fit your specific workflows—not the other way around.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Easy to Use</h3>
+                    <p>Intuitive interfaces your staff can learn quickly. No complex training programs or dedicated IT support required.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">☁️</div>
+                    <h3>Cloud-Based</h3>
+                    <p>Access your tools from anywhere. Secure, reliable, and always available with automatic updates.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤝</div>
+                    <h3>Real Support</h3>
+                    <p>Talk to actual people who understand healthcare. We're here when you need us—no ticket queues or chatbots.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure & Compliant</h3>
+                    <p>Built with security in mind on trusted infrastructure. Your data stays protected.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solutions Section -->
+    <section id="solutions">
+        <div class="container">
+            <h2 class="section-title">Our Solutions</h2>
+            <div class="solutions-grid">
+                <div class="solution-card">
+                    <div class="solution-header">
+                        <h3>Operations Hub</h3>
+                        <p>24-Hour Report & Communication Board</p>
+                    </div>
+                    <div class="solution-body">
+                        <p>A digital command center for your unit. Manage 24-hour reports, staff communication, census tracking, and on-call directories—all in one place.</p>
+                        <a href="operations-hub.html" class="solution-btn">Learn More</a>
+                    </div>
+                </div>
+                <div class="solution-card coming-soon-card">
+                    <div class="solution-header">
+                        <h3>Coming Soon</h3>
+                        <p>More Solutions in Development</p>
+                    </div>
+                    <div class="solution-body">
+                        <p>We're always working on new tools to help rural healthcare facilities operate more efficiently. Check back soon!</p>
+                        <span class="solution-btn">Stay Tuned</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="container">
+            <h2 class="section-title">Contact Us</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Let's Talk</h3>
+                    <p>Interested in learning more about our solutions? Have questions about how we can help your facility? We'd love to hear from you.</p>
+                    <div class="contact-email">
+                        <span class="email-icon">✉️</span>
+                        <div>
+                            <strong>Email Us</strong><br>
+                            <a href="mailto:michealedwards@naemedsolutions.com">michealedwards@naemedsolutions.com</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form id="contactForm" onsubmit="handleSubmit(event)">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="facility">Facility Name</label>
+                            <input type="text" id="facility" name="facility">
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 NAE Medical Solutions. All rights reserved.</p>
+    </footer>
+
+    <script>
+// Mobile menu toggle
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        // Apps dropdown toggle
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            document.getElementById('appsDropdown').classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            document.getElementById('appsDropdown').classList.remove('show');
+        });
+
+        // Smooth scrolling for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+                // Close mobile menu if open
+                document.getElementById('navLinks').classList.remove('active');
+            });
+        });
+
+        // Form submission handler (placeholder - needs backend)
+        function handleSubmit(e) {
+            e.preventDefault();
+            alert('Thank you for your message! We will get back to you soon.\n\nNote: Contact form backend coming soon. Please email us directly at michealedwards@naemedsolutions.com');
+        }
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAE Medical Solutions - Affordable Healthcare Technology</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: #1a365d;
+            padding: 15px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo span {
+            color: #4CAF50;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: #4CAF50;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Page containers */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1a365d 0%, #2d5a87 100%);
+            color: white;
+            padding: 150px 20px 100px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 48px);
+            margin-bottom: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero p {
+            font-size: clamp(16px, 2.5vw, 20px);
+            max-width: 700px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+
+        .hero-btn {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+            transition: background 0.3s, transform 0.3s;
+            cursor: pointer;
+        }
+
+        .hero-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .hero-btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .hero-btn-secondary:hover {
+            background: white;
+            color: #1a365d;
+        }
+
+        /* Sections */
+        section {
+            padding: 80px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(24px, 4vw, 36px);
+            color: #1a365d;
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 50px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* About Section */
+        .bg-gray {
+            background: #f8f9fa;
+        }
+
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .about-content p {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .mission-box {
+            background: white;
+            border-left: 4px solid #4CAF50;
+            padding: 30px;
+            margin-top: 40px;
+            text-align: left;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+
+        .mission-box h3 {
+            color: #1a365d;
+            margin-bottom: 15px;
+        }
+
+        /* Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            color: #1a365d;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .feature-card p {
+            color: #666;
+        }
+
+        /* Product Features - horizontal style */
+        .product-features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .product-feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.06);
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .product-feature-card .feature-icon {
+            font-size: 35px;
+            flex-shrink: 0;
+            margin-bottom: 0;
+        }
+
+        .product-feature-card h3 {
+            color: #1a365d;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .product-feature-card p {
+            color: #666;
+            font-size: 15px;
+        }
+
+        /* Solutions Section */
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .solution-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .solution-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .solution-header {
+            background: #1a365d;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .solution-header h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .solution-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .solution-body {
+            padding: 30px;
+        }
+
+        .solution-body p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .solution-btn {
+            display: block;
+            background: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        .solution-btn:hover {
+            background: #45a049;
+        }
+
+        .coming-soon-card {
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+        }
+
+        .coming-soon-card .solution-header {
+            background: #666;
+        }
+
+        .coming-soon-card .solution-btn {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        /* Overview Section */
+        .overview-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .overview-text h3 {
+            color: #1a365d;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .overview-text p {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 17px;
+        }
+
+        .overview-image {
+            background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+        }
+
+        .overview-image-placeholder {
+            color: #999;
+            font-size: 18px;
+        }
+
+        /* How It Works */
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step {
+            text-align: center;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+
+        .step h3 {
+            color: #1a365d;
+            margin-bottom: 10px;
+        }
+
+        .step p {
+            color: #666;
+        }
+
+        /* Pricing Section */
+        .pricing-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .pricing-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .pricing-header h3 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .pricing-header p {
+            opacity: 0.9;
+        }
+
+        .pricing-body {
+            padding: 40px 30px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .price-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .price-label {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .price-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+
+        .price-value small {
+            font-size: 16px;
+            color: #888;
+            font-weight: normal;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 30px 0;
+        }
+
+        .pricing-features li {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #555;
+        }
+
+        .check-icon {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .pricing-btn {
+            display: block;
+            background: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 18px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 18px;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+
+        .pricing-btn:hover {
+            background: #45a049;
+        }
+
+        .pricing-note {
+            text-align: center;
+            margin-top: 30px;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .pricing-note a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #1a365d 0%, #2d5a87 100%);
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .cta-section h2 {
+            font-size: clamp(24px, 4vw, 36px);
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            max-width: 500px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+
+        /* Contact Section */
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .contact-info h3 {
+            color: #1a365d;
+            margin-bottom: 20px;
+        }
+
+        .contact-info p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .contact-email {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .email-icon {
+            font-size: 30px;
+        }
+
+        .contact-email a {
+            color: #1a365d;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .contact-email a:hover {
+            color: #4CAF50;
+        }
+
+        .contact-form {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #45a049;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a365d;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        footer p {
+            opacity: 0.8;
+        }
+
+        footer a {
+            color: #4CAF50;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #1a365d;
+                flex-direction: column;
+                padding: 20px;
+                gap: 15px;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .contact-content {
+                grid-template-columns: 1fr;
+            }
+
+            .overview-content {
+                grid-template-columns: 1fr;
+            }
+
+            .overview-image {
+                order: -1;
+            }
+
+            .hero {
+                padding: 120px 20px 80px;
+            }
+            
