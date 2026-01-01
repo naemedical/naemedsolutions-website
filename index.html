@@ -667,6 +667,35 @@
             e.preventDefault();
             alert('Thank you for your message! We will get back to you soon.\n\nNote: Contact form backend coming soon. Please email us directly at michealedwards@naemedsolutions.com');
         }
+
+        function showPage(pageId) {
+  const pages = document.querySelectorAll('.page');
+  if (!pages.length) return; // if you aren't using page switching, do nothing
+
+  pages.forEach(p => p.classList.remove('active'));
+  const targetPage = document.getElementById(pageId);
+  if (targetPage) targetPage.classList.add('active');
+}
+
+function scrollToSection(sectionId) {
+  // wait a frame so a just-switched page can render before measuring scroll
+  requestAnimationFrame(() => {
+    const target = document.getElementById(sectionId);
+    if (!target) return;
+
+    const navbar = document.querySelector('.navbar');
+    const offset = navbar ? navbar.offsetHeight + 10 : 0;
+
+    const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+
+    // Close mobile menu if open
+    const navLinks = document.getElementById('navLinks');
+    if (navLinks) navLinks.classList.remove('active');
+  });
+}
+
+
     </script>
 </body>
 </html>
