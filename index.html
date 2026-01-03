@@ -605,9 +605,10 @@
                 <li><a onclick="showPage('home'); scrollToSection('solutions')">Solutions</a></li>
                 <li class="dropdown">
                     <a onclick="toggleDropdown(event)">Apps ▼</a>
-                    <ul class="dropdown-menu" id="appsDropdown">
-                        <li><a href="https://ophub.naemedsolutions.com" target="_blank">Operations Hub</a></li>
-                    </ul>
+<ul class="dropdown-menu" id="appsDropdown">
+    <li><a href="https://ophub.naemedsolutions.com" target="_blank">Operations Hub</a></li>
+    <li><a href="https://medcalc.naemedsolutions.com" target="_blank">Medication Calculator</a></li>
+</ul>
                 </li>
                 <li><a onclick="showPage('home'); scrollToSection('contact')">Contact</a></li>
             </ul>
@@ -679,7 +680,7 @@
     <section id="solutions">
         <div class="container">
             <h2 class="section-title">Our Solutions</h2>
-            <div class="solutions-grid">
+<div class="solutions-grid">
 <div class="solution-card">
                     <div class="solution-header">
                         <h3>Operations Hub</h3>
@@ -688,6 +689,16 @@
                     <div class="solution-body">
                         <p>A digital command center for your unit. Manage 24-hour reports, staff communication, census tracking, and on-call directories—all in one place.</p>
                         <button class="solution-btn" onclick="showOverlay('ophub-overlay')">Learn More</button>
+                    </div>
+                </div>
+                <div class="solution-card">
+                    <div class="solution-header">
+                        <h3>Medication Calculator</h3>
+                        <p>Pediatric & Emergency Dosing Tool</p>
+                    </div>
+                    <div class="solution-body">
+                        <p>A comprehensive medication dosing calculator with a built-in weight estimation engine and full editor suite—replacing guesswork with clinical precision.</p>
+                        <button class="solution-btn" onclick="showOverlay('medcalc-overlay')">Learn More</button>
                     </div>
                 </div>
                 <div class="solution-card coming-soon-card">
@@ -788,6 +799,33 @@
             </div>
 
     
+</div>
+    </div>
+
+    <!-- Medication Calculator Overlay -->
+    <div class="overlay" id="medcalc-overlay">
+        <div class="overlay-content">
+            <button class="overlay-close" onclick="closeOverlay('medcalc-overlay')">&times;</button>
+            <h2>Medication Calculator</h2>
+            <p class="overlay-subtitle">Pediatric & Emergency Dosing Tool</p>
+            
+            <h3>Pain Points We Solve</h3>
+            <ul class="overlay-list">
+                <li>No single, consistent reference—staff use random apps with generic formularies</li>
+                <li>Confusion and cognitive load during emergencies when every second counts</li>
+                <li>Inaccurate color-coded reference tapes that don't fit every patient</li>
+                <li>Slow drug guides, Google searches, and guesswork under pressure</li>
+                <li>No standardization—everyone uses something different</li>
+            </ul>
+
+            <h3>What Makes It Different</h3>
+            <ul class="overlay-list">
+                <li>Full editor suite to customize medications and dosing for your facility</li>
+                <li>Smart weight estimation engine—enter any biometric you have (height, age) and get the most accurate clinically validated estimate</li>
+                <li>One consistent tool your entire team can rely on</li>
+                <li>Built for high-stress moments with a clean, fast interface</li>
+            </ul>
+
         </div>
     </div>
 
