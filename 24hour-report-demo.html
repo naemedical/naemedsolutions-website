@@ -564,6 +564,32 @@ body {
     .census-source-select,
     .census-label-edit {
         display: none !important;
+
+.mobile-info-card {
+    background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+    border-bottom: 2px solid #e94560;
+    align-items: flex-start;
+}
+
+.info-card-text strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #4CAF50;
+}
+
+.info-card-text p {
+    display: block;
+    color: #a0a0a0;
+    font-size: 12px;
+}
+
+.info-card-close {
+    color: #666;
+}
+
+.info-card-close:hover {
+    color: white;
+}
     }
 
     .section-title,
@@ -575,6 +601,41 @@ body {
     .mode-toggle {
         display: none !important;
     }
+
+/* Info Card */
+.mobile-info-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    color: #333;
+    padding: 12px 20px;
+    border-bottom: 2px solid #4CAF50;
+}
+
+.info-card-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.info-card-text {
+    flex: 1;
+}
+
+.info-card-text strong {
+    font-size: 14px;
+    margin-right: 8px;
+    color: #2e7d32;
+}
+
+.info-card-text p {
+    display: inline;
+    font-size: 13px;
+    margin: 0;
+    color: #555;
+}
+
+
 
 html {
     overflow: auto !important;
@@ -947,7 +1008,14 @@ body {
         <button class="btn btn-blue" onclick="openManagePagesDialog()">Manage Pages</button>
     </div>
 
-    <div class="canvas user-mode" id="canvas"></div>
+<div class="mobile-info-card" id="mobileInfoCard">
+    <div class="info-card-icon">☁️</div>
+    <div class="info-card-text">
+        <strong>Auto-Sync Enabled</strong>
+        <p>Your inputs save automatically to the cloud. Changes appear instantly on all display screens—no refresh needed.</p>
+    </div>
+</div>
+<div class="canvas user-mode" id="canvas"></div>
 
     <div class="display-overlay" id="displayOverlay">
         <div class="display-header">
@@ -1432,6 +1500,8 @@ document.getElementById('saveBtn').addEventListener('click', () => { sections.fo
 
 function updateDateTime() { const now = new Date(); const ts = now.toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit', hour12:true }); document.getElementById('dateTimeDisplay').textContent = ts; document.getElementById('displayDateTime').textContent = ts; }
 
+
+
 function init() {
     isBuildMode = false;
     modeToggle.checked = true;
@@ -1440,6 +1510,8 @@ function init() {
     setInterval(updateDateTime, 1000);
     if (!loadFromStorage()) createPrebuiltSections();
     if (!localStorage.getItem('demo_tutorial_done')) setTimeout(showTutorial, 500);
+
+
 }
 
 init();
