@@ -320,6 +320,21 @@
             cursor: not-allowed;
         }
 
+/* Solution Buttons Container */
+.solution-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.demo-btn {
+    background: #1a365d !important;
+}
+
+.demo-btn:hover {
+    background: #2d5a87 !important;
+}
+
         /* Contact Section */
         #contact {
             background: white;
@@ -688,7 +703,10 @@
                     </div>
                     <div class="solution-body">
                         <p>A digital command center for your unit. Manage 24-hour reports, staff communication, census tracking, and on-call directories—all in one place.</p>
-                        <button class="solution-btn" onclick="showOverlay('ophub-overlay')">Learn More</button>
+                        <div class="solution-buttons">
+                            <a href="24hour-report-demo.html" class="solution-btn demo-btn" target="_blank">🎮 Try Demo</a>
+                            <button class="solution-btn" onclick="showOverlay('ophub-overlay')">Learn More</button>
+                        </div>
                     </div>
                 </div>
                 <div class="solution-card">
@@ -698,7 +716,10 @@
                     </div>
                     <div class="solution-body">
                         <p>A comprehensive medication dosing calculator with a built-in weight estimation engine and full editor suite—replacing guesswork with clinical precision.</p>
-                        <button class="solution-btn" onclick="showOverlay('medcalc-overlay')">Learn More</button>
+                        <div class="solution-buttons">
+                            <a href="medcalc-demo.html" class="solution-btn demo-btn" target="_blank">🎮 Try Demo</a>
+                            <button class="solution-btn" onclick="showOverlay('medcalc-overlay')">Learn More</button>
+                        </div>
                     </div>
                 </div>
                 <div class="solution-card coming-soon-card">
