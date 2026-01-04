@@ -179,6 +179,59 @@ body.tbw-active .sub {
   font-weight: 800;
 }
 
+/* Weight-based color zones (Broselow-style) */
+body.weight-gray { background-color: #e0e0e0; }
+body.weight-gray .controls { background-color: rgba(158, 158, 158, 0.15); border-radius: 8px; padding: 12px; }
+
+body.weight-pink { background-color: #fce4ec; }
+body.weight-pink .controls { background-color: rgba(233, 30, 99, 0.1); border-radius: 8px; padding: 12px; }
+
+body.weight-red { background-color: #ffebee; }
+body.weight-red .controls { background-color: rgba(244, 67, 54, 0.1); border-radius: 8px; padding: 12px; }
+
+body.weight-purple { background-color: #f3e5f5; }
+body.weight-purple .controls { background-color: rgba(156, 39, 176, 0.1); border-radius: 8px; padding: 12px; }
+
+body.weight-yellow { background-color: #fffde7; }
+body.weight-yellow .controls { background-color: rgba(255, 235, 59, 0.2); border-radius: 8px; padding: 12px; }
+
+body.weight-white { background-color: #ffffff; }
+body.weight-white .controls { background-color: rgba(0, 0, 0, 0.03); border-radius: 8px; padding: 12px; }
+
+body.weight-blue { background-color: #e3f2fd; }
+body.weight-blue .controls { background-color: rgba(33, 150, 243, 0.1); border-radius: 8px; padding: 12px; }
+
+body.weight-orange { background-color: #fff3e0; }
+body.weight-orange .controls { background-color: rgba(255, 152, 0, 0.1); border-radius: 8px; padding: 12px; }
+
+body.weight-green { background-color: #e8f5e9; }
+body.weight-green .controls { background-color: rgba(76, 175, 80, 0.1); border-radius: 8px; padding: 12px; }
+
+body.weight-adult { background-color: #fffaf3; }
+body.weight-adult .controls { background-color: rgba(0, 0, 0, 0.02); border-radius: 8px; padding: 12px; }
+
+.weight-zone-indicator {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.weight-zone-indicator.gray { background: #9e9e9e; color: white; }
+.weight-zone-indicator.pink { background: #e91e63; color: white; }
+.weight-zone-indicator.red { background: #f44336; color: white; }
+.weight-zone-indicator.purple { background: #9c27b0; color: white; }
+.weight-zone-indicator.yellow { background: #fdd835; color: #333; }
+.weight-zone-indicator.white { background: #fafafa; color: #333; border: 1px solid #ccc; }
+.weight-zone-indicator.blue { background: #2196f3; color: white; }
+.weight-zone-indicator.orange { background: #ff9800; color: white; }
+.weight-zone-indicator.green { background: #4caf50; color: white; }
+.weight-zone-indicator.adult { background: #455a64; color: white; }
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -561,11 +614,12 @@ body.overlay-open {
     </select>
   </label>
 
-  <label>
+<label>
     <span>
       Patient Weight (kg)
       <span id="ibwMethodLabel" class="ibw-method-label"></span>
       <span id="weightWarning" class="weight-warning"></span>
+      <span id="weightZoneIndicator" class="weight-zone-indicator" style="display:none;"></span>
     </span>
     <input id="weightKg" type="number" step="0.01" min="0" placeholder="e.g., 18.5" />
   </label>
@@ -664,12 +718,14 @@ body.overlay-open {
 </div>
 
 <!-- Habitus overlay -->
-<div id="habitusOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:11000;">
-  <div style="background:#fff; max-width:480px; margin:60px auto; padding:16px; border-radius:10px;">
+<div id="habitusOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:11000; overflow-y:auto;">
+  <div style="background:#fff; max-width:600px; margin:40px auto; padding:16px; border-radius:10px;">
     <button id="habitusBack" style="margin-bottom:8px; padding:4px 9px; cursor:pointer;">Back</button>
     <h2>7-Point Habitus Scale</h2>
-    <p style="font-size:0.8rem; color:#555;">Use visual assessment to choose habitus score 1-7 based on CDC percentiles.</p>
-    <p style="font-size:0.75rem; color:#666;">1=10th%, 2=25th%, 3=50th%(IBW), 4=75th%, 5=90th%, 6=95th%, 7=97th%</p>
+    <p style="font-size:0.8rem; color:#555;">Use visual assessment to choose habitus score 1-7 based on CDC percentiles. This adjusts the estimated weight (IBW) accordingly.</p>
+    <p style="font-size:0.75rem; color:#666; margin-bottom:12px;">1=10th%, 2=25th%, 3=50th%(IBW), 4=75th%, 5=90th%, 6=95th%, 7=97th%</p>
+    <img src="habitus.jpg" alt="Habitus reference chart" style="width:100%; max-width:100%; border-radius:8px; border:1px solid #ddd;">
+    <p style="font-size:0.7rem; color:#888; margin-top:8px; text-align:center;">Reference: Visual habitus assessment guide</p>
   </div>
 </div>
 
@@ -757,6 +813,65 @@ function getConcentrationInDoseUnits(drug) {
 
 function concUnit(drug) { 
   return drug?.units?.concentration || "mg/mL"; 
+}
+
+function getHabitusMultiplier(score) {
+  // Multipliers relative to 50th percentile (habitus 3)
+  const multipliers = {
+    1: 0.85,  // 10th percentile
+    2: 0.92,  // 25th percentile
+    3: 1.00,  // 50th percentile (IBW reference)
+    4: 1.08,  // 75th percentile
+    5: 1.18,  // 90th percentile
+    6: 1.28,  // 95th percentile
+    7: 1.35   // 97th percentile
+  };
+  return multipliers[score] || 1.0;
+}
+
+function getWeightZone(kg) {
+  if (!kg || kg <= 0) return null;
+  if (kg < 6) return { zone: "gray", label: "Gray", range: "3-5 kg" };
+  if (kg < 8) return { zone: "pink", label: "Pink", range: "6-7 kg" };
+  if (kg < 10) return { zone: "red", label: "Red", range: "8-9 kg" };
+  if (kg < 12) return { zone: "purple", label: "Purple", range: "10-11 kg" };
+  if (kg < 15) return { zone: "yellow", label: "Yellow", range: "12-14 kg" };
+  if (kg < 19) return { zone: "white", label: "White", range: "15-18 kg" };
+  if (kg < 24) return { zone: "blue", label: "Blue", range: "19-23 kg" };
+  if (kg < 30) return { zone: "orange", label: "Orange", range: "24-29 kg" };
+  if (kg < 37) return { zone: "green", label: "Green", range: "30-36 kg" };
+  return { zone: "adult", label: "Adult", range: ">36 kg" };
+}
+
+function updateWeightZoneDisplay() {
+  const wt = state.weightKg || 0;
+  const indicator = document.getElementById("weightZoneIndicator");
+  
+  // Remove all weight zone classes
+  document.body.classList.remove(
+    "weight-gray", "weight-pink", "weight-red", "weight-purple",
+    "weight-yellow", "weight-white", "weight-blue", "weight-orange",
+    "weight-green", "weight-adult"
+  );
+  
+  if (wt <= 0) {
+    if (indicator) {
+      indicator.style.display = "none";
+      indicator.className = "weight-zone-indicator";
+      indicator.textContent = "";
+    }
+    return;
+  }
+  
+  const zoneInfo = getWeightZone(wt);
+  if (zoneInfo) {
+    document.body.classList.add(`weight-${zoneInfo.zone}`);
+    if (indicator) {
+      indicator.style.display = "inline-block";
+      indicator.className = `weight-zone-indicator ${zoneInfo.zone}`;
+      indicator.textContent = `${zoneInfo.label} (${zoneInfo.range})`;
+    }
+  }
 }
 
 function setKgDisplayPurple(isPurple) {
@@ -1246,13 +1361,31 @@ function render() {
     state.tbwEstimateKg = 0;
     state.tbwFactor = null;
 
-    if (hasValidIbw) {
-      state.weightKg = ibw;
-      if (kgInput) kgInput.value = ibw.toFixed(2);
+if (hasValidIbw) {
+      let adjustedIbw = ibw;
+      let habitusNote = "";
+      
+      // Apply habitus adjustment if selected
+      if (state.habitusScore && state.habitusScore !== 3) {
+        const multiplier = getHabitusMultiplier(state.habitusScore);
+        adjustedIbw = ibw * multiplier;
+        const percentileLabels = {
+          1: "10th",
+          2: "25th",
+          4: "75th",
+          5: "90th",
+          6: "95th",
+          7: "97th"
+        };
+        habitusNote = ` → ${percentileLabels[state.habitusScore]}%`;
+      }
+      
+      state.weightKg = adjustedIbw;
+      if (kgInput) kgInput.value = adjustedIbw.toFixed(2);
       state.ibwAutoFilled = true;
 
       if (methodSpan && state.ibwMethod) {
-        methodSpan.textContent = `(${state.ibwMethod})`;
+        methodSpan.textContent = `(${state.ibwMethod}${habitusNote})`;
         methodSpan.classList.remove("tbw-mode");
       }
 
@@ -1732,7 +1865,7 @@ function render() {
     }
   });
 
-  // Rebuild jump dropdown
+// Rebuild jump dropdown
   const jump = document.getElementById("sectionJump");
   const doseTableEl = document.getElementById("doseTable");
   if (jump && doseTableEl) {
@@ -1748,6 +1881,9 @@ function render() {
       jump.appendChild(opt);
     });
   }
+
+  // Update weight zone coloring
+  updateWeightZoneDisplay();
 }
 
 // ==================== LOG RENDERING ====================
