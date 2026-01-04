@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>24 Hour Report - Interactive Demo</title>
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { overflow: hidden; height: 100%; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f0f0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: clamp(12px, 1.4vw, 16px);
+}
+
+.header {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    z-index: 1000;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.header-left { display: flex; align-items: center; gap: 20px; }
+.header-title { font-size: 20px; font-weight: bold; }
+.demo-badge {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+.mode-toggle { display: flex; align-items: center; gap: 10px; }
+.toggle-switch { position: relative; width: 60px; height: 30px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #4CAF50;
+    transition: 0.3s;
+    border-radius: 30px;
+}
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px; width: 22px;
+    left: 4px; bottom: 4px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+.toggle-switch input:checked + .toggle-slider { background-color: #2196F3; }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(30px); }
+.mode-label { font-weight: bold; padding: 4px 12px; border-radius: 4px; font-size: 14px; }
+.mode-label.build { background-color: #4CAF50; }
+.mode-label.user { background-color: #2196F3; }
+
+.header-right { display: flex; align-items: center; gap: 10px; }
+.btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+.btn:hover { opacity: 0.85; }
+.btn-green { background-color: #4CAF50; color: white; }
+.btn-blue { background-color: #2196F3; color: white; }
+.btn-red { background-color: #f44336; color: white; }
+.btn-orange { background-color: #ff9800; color: white; }
+
+.build-toolbar {
+    background-color: #444;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+.build-toolbar.hidden { display: none; }
+
+.canvas {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    background-color: #e8e8e8;
+    background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+.canvas.build-mode-canvas { overflow: scroll; }
+.canvas.build-mode-canvas::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4000px; height: 4000px;
+    pointer-events: none;
+}
+.canvas.user-mode {
+    background-image: none;
+    background-color: #f5f5f5;
+    min-height: 100%;
+}
+
+.section {
+    position: absolute;
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    min-width: 200px;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.section.build-mode { border: 2px dashed #4CAF50; }
+.section.build-mode:hover { border-color: #2196F3; }
+.section.dragging { opacity: 0.8; z-index: 1000; }
+.section-header {
+    background-color: #f5f5f5;
+    padding: 8px 12px;
+    border-bottom: 1px solid #ddd;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: move;
+}
+.section.user-mode .section-header { cursor: default; }
+.section-title { font-weight: bold; font-size: 16px; flex: 1; }
+.section-title.hidden { display: none; }
+.section-last-updated { font-size: 10px; color: #999; font-weight: normal; margin-left: 10px; }
+.section-title-input {
+    font-weight: bold;
+    font-size: 16px;
+    border: 1px dashed #ccc;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: transparent;
+    width: 100%;
+    max-width: 200px;
+}
+.section-title-input.hidden { display: none; }
+.section-controls { display: flex; gap: 5px; }
+.section-controls.hidden { display: none; }
+.section-btn {
+    width: 24px; height: 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.section-btn.add { background-color: #4CAF50; color: white; }
+.section-btn.delete { background-color: #f44336; color: white; }
+.section-content { flex: 1; padding: 10px; overflow-y: auto; }
+.resize-handle {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 20px; height: 20px;
+    cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 50%, #ccc 50%);
+    border-radius: 0 0 6px 0;
+}
+.resize-handle.hidden { display: none; }
+
+.element-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    gap: 10px;
+}
+.element-row:nth-child(even) { background-color: #f0f0f0; }
+.element-name { flex: 1; font-size: 14px; font-weight: 500; }
+.element-name.hidden { display: none; }
+.element-name-input {
+    flex: 1;
+    font-size: 14px;
+    padding: 4px 8px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+    background: transparent;
+}
+.element-name-input.hidden { display: none; }
+.element-value-input {
+    width: 60px;
+    padding: 4px 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+}
+.element-value-input:disabled { background-color: #f5f5f5; color: #999; }
+.census-label { font-size: 11px; display: flex; align-items: center; gap: 3px; }
+.census-label.hidden { display: none; }
+.row-delete-btn {
+    width: 20px; height: 20px;
+    border: none;
+    border-radius: 4px;
+    background-color: #f44336;
+    color: white;
+    cursor: pointer;
+    font-size: 10px;
+}
+.row-delete-btn.hidden { display: none; }
+
+.staff-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    gap: 8px;
+}
+.staff-row:nth-child(even) { background-color: #f0f0f0; }
+.staff-position { width: 120px; font-size: 14px; font-weight: 500; }
+.staff-position.hidden { display: none; }
+.staff-position-input {
+    width: 120px;
+    font-size: 14px;
+    padding: 4px 8px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+}
+.staff-position-input.hidden { display: none; }
+.staff-name-input, .staff-phone-input {
+    width: 100px;
+    padding: 4px 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.staff-name-input:disabled, .staff-phone-input:disabled { background-color: #f5f5f5; color: #999; }
+.staff-assignment-label { font-size: 11px; display: flex; align-items: center; gap: 3px; }
+.staff-assignment-label.hidden { display: none; }
+.staff-shift-select { padding: 4px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; }
+.staff-shift-select.hidden { display: none; }
+.staff-assignment-input {
+    width: 150px;
+    padding: 4px 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.staff-assignment-input:disabled { background-color: #f5f5f5; color: #999; }
+.staff-assignment-input.hidden { display: none !important; }
+
+.status-indicator { display: flex; gap: 5px; margin-left: 10px; }
+.status-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s;
+}
+.status-dot:hover { transform: scale(1.2); }
+.status-dot.green { background-color: #4CAF50; }
+.status-dot.yellow { background-color: #FFC107; }
+.status-dot.red { background-color: #f44336; }
+.status-dot.selected { border: 2px solid #333; }
+.section.status-yellow { border: 3px solid #FFC107 !important; }
+.section.status-red { border: 3px solid #f44336 !important; }
+
+.communication-editor-container {
+    width: 100%;
+    height: calc(100% - 10px);
+    display: flex;
+    flex-direction: column;
+}
+.communication-editor-container .ql-toolbar {
+    display: none;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    background: #f9f9f9;
+}
+.communication-editor-container.show-toolbar .ql-toolbar { display: block; }
+.communication-editor-container .ql-container {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+.communication-editor-container.show-toolbar .ql-container { border-radius: 0 0 4px 4px; }
+.communication-editor-container .ql-editor { min-height: 100px; }
+.comm-toolbar-toggle {
+    position: absolute;
+    top: 5px; right: 5px;
+    padding: 2px 6px;
+    font-size: 10px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    z-index: 10;
+}
+.build-mode .communication-editor-container .ql-toolbar { display: none !important; }
+.build-mode .communication-editor-container .ql-container { border-radius: 4px !important; }
+.build-mode .comm-toolbar-toggle { display: none; }
+
+.rrt-container { font-size: 13px; }
+.rrt-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+}
+.rrt-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5px;
+    margin-bottom: 5px;
+    align-items: center;
+}
+.rrt-role { font-size: 12px; }
+.rrt-select { font-size: 12px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; }
+.rrt-select:disabled { background-color: #f5f5f5; color: #999; }
+
+.type-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background-color: #666;
+    color: white;
+    margin-left: 10px;
+}
+.type-badge.elements { background-color: #9C27B0; }
+.type-badge.staff { background-color: #2196F3; }
+.type-badge.oncall { background-color: #FF9800; }
+.type-badge.communication { background-color: #4CAF50; }
+.type-badge.rrt { background-color: #f44336; }
+.type-badge.census { background-color: #E91E63; }
+
+.census-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+}
+.census-display-label { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
+.census-display-value { font-size: 48px; font-weight: bold; color: #f44336; }
+
+.display-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #b8c6db 0%, #8a9bb3 50%, #6b7d94 100%);
+    z-index: 5000;
+    flex-direction: column;
+    overflow: hidden;
+}
+.display-overlay.show { display: flex; }
+.display-header {
+    background-color: #16213e;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+.display-title { font-size: 24px; font-weight: bold; }
+.display-close-btn {
+    padding: 8px 20px;
+    font-size: 14px;
+    background-color: #e94560;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.display-canvas {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    background: linear-gradient(180deg, #b8c6db 0%, #8a9bb3 50%, #6b7d94 100%);
+    padding-bottom: 40px;
+}
+.display-section {
+    position: absolute;
+    background-color: #16213e;
+    border: 2px solid #0f3460;
+    border-radius: 8px;
+    color: white;
+    overflow: hidden;
+}
+.display-section-header {
+    background-color: #0f3460;
+    padding: 8px 12px;
+    font-weight: bold;
+    font-size: 1.2em;
+    border-bottom: 1px solid #1a1a2e;
+}
+.display-section-content {
+    padding: 10px;
+    font-size: 1em;
+    overflow-y: auto;
+    height: calc(100% - 40px);
+}
+.display-row {
+    padding: 0.4em 0;
+    border-bottom: 1px solid #0f3460;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+.display-row:last-child { border-bottom: none; }
+.display-label { color: #a0a0a0; font-size: 1em; }
+.display-value { color: #ffffff; font-weight: 500; text-align: right; font-size: 1em; }
+.display-census-value {
+    font-size: 5em;
+    font-weight: bold;
+    color: #e94560;
+    text-align: center;
+    padding: 20px;
+}
+.display-rrt-table { width: 100%; }
+.display-rrt-header {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 5px;
+    padding: 8px 5px;
+    background-color: #0f3460;
+    border-bottom: 2px solid #1a1a2e;
+    font-weight: bold;
+    text-align: center;
+}
+.display-rrt-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 5px;
+    padding: 6px 5px;
+    border-bottom: 1px solid #0f3460;
+}
+.display-rrt-row:last-child { border-bottom: none; }
+.display-rrt-cell { padding: 4px; }
+.display-rrt-role { color: #a0a0a0; text-align: left; }
+.display-rrt-value { color: #ffffff; text-align: center; font-weight: 500; }
+
+.oncall-visible-label { font-size: 11px; display: flex; align-items: center; gap: 3px; color: #666; }
+.oncall-visible-label.hidden { display: none !important; }
+.phone-call-btn {
+    display: none;
+    text-decoration: none;
+    font-size: 20px;
+    padding: 10px;
+    cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    text-align: center;
+}
+.display-phone-btn { display: none; text-decoration: none; font-size: 18px; margin-left: 8px; }
+
+#dataPageSelect {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: none;
+    background: #2e7d32;
+    color: white;
+    cursor: pointer;
+}
+#dataPageSelect option { background: #1a1a2e; color: white; padding: 10px; }
+
+.tutorial-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+}
+.tutorial-overlay.show { display: flex; }
+.tutorial-modal {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 16px;
+    padding: 30px 40px;
+    max-width: 600px;
+    width: 90%;
+    color: white;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid #0f3460;
+    animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.tutorial-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #e94560; text-align: center; }
+.tutorial-content { font-size: 15px; line-height: 1.7; margin-bottom: 25px; }
+.tutorial-content p { margin-bottom: 15px; }
+.tutorial-content ul { margin-left: 20px; margin-bottom: 15px; }
+.tutorial-content li { margin-bottom: 8px; }
+.tutorial-highlight { background: rgba(233, 69, 96, 0.2); padding: 2px 8px; border-radius: 4px; color: #ff6b6b; font-weight: 500; }
+.tutorial-buttons { display: flex; justify-content: space-between; gap: 15px; }
+.tutorial-btn { flex: 1; padding: 12px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.tutorial-btn-skip { background: transparent; border: 2px solid #666; color: #999; }
+.tutorial-btn-skip:hover { border-color: #999; color: white; }
+.tutorial-btn-next { background: linear-gradient(135deg, #e94560, #ff6b6b); color: white; }
+.tutorial-btn-next:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4); }
+.tutorial-progress { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+.tutorial-dot { width: 10px; height: 10px; border-radius: 50%; background: #333; transition: all 0.3s; }
+.tutorial-dot.active { background: #e94560; transform: scale(1.2); }
+.tutorial-dot.completed { background: #4CAF50; }
+
+.hidden { display: none !important; }
+.user-mode .census-source-select { display: none !important; }
+.build-mode .census-source-select { display: block !important; }
+.user-mode .census-label-edit { display: none !important; }
+.build-mode .census-label-edit { display: block !important; }
+    </style>
+</head>
+<body>
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-modal">
+            <div class="tutorial-progress" id="tutorialProgress"></div>
+            <div class="tutorial-title" id="tutorialTitle">Welcome!</div>
+            <div class="tutorial-content" id="tutorialContent"></div>
+            <div class="tutorial-buttons">
+                <button class="tutorial-btn tutorial-btn-skip" id="tutorialSkip">Skip Tutorial</button>
+                <button class="tutorial-btn tutorial-btn-next" id="tutorialNext">Get Started →</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-left">
+            <span class="header-title">24 Hour Report</span>
+            <span class="demo-badge">Demo</span>
+            <span id="dateTimeDisplay" style="font-size:14px;color:#ccc;margin-left:15px;"></span>
+            <div class="mode-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="modeToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span id="modeLabel" class="mode-label user">USER MODE</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div id="displayPageButtons" style="display:flex;gap:5px;margin-right:10px;">
+                <select id="dataPageSelect" style="display:none;">
+                    <option value="">📺 Data Pages</option>
+                </select>
+            </div>
+            <button class="btn btn-orange" id="tutorialBtn" onclick="restartTutorial()">📖 Tutorial</button>
+            <button class="btn btn-red" id="resetBtn" onclick="resetDemo()">🔄 Reset</button>
+            <button class="btn btn-blue hidden" id="saveBtn">Save Layout</button>
+        </div>
+    </div>
+
+    <div class="build-toolbar hidden" id="buildToolbar">
+        <select id="addSectionSelect" style="padding:8px 12px;font-size:14px;border-radius:4px;border:none;cursor:pointer;">
+            <option value="">+ Add Section</option>
+            <option value="elements">Elements</option>
+            <option value="staff">Staff</option>
+            <option value="oncall">On Call</option>
+            <option value="communication">WhiteBoard</option>
+            <option value="rrt">RRT</option>
+            <option value="census">Census Display</option>
+        </select>
+        <button class="btn btn-blue" onclick="openPhoneNumbersEditor()">Phone Numbers</button>
+        <button class="btn btn-blue" onclick="openAddPageDialog()">Add Page</button>
+        <button class="btn btn-blue" onclick="openManagePagesDialog()">Manage Pages</button>
+    </div>
+
+    <div class="canvas user-mode" id="canvas"></div>
+
+    <div class="display-overlay" id="displayOverlay">
+        <div class="display-header">
+            <span class="display-title" id="displayTitle">Page Title</span>
+            <span id="displayDateTime" style="font-size:18px;color:#a0a0a0;margin-left:20px;"></span>
+            <div style="flex:1;"></div>
+            <div id="displayHeaderButtons" style="display:flex;gap:8px;margin-left:20px;"></div>
+            <button class="display-close-btn" onclick="closeDisplayPage()">← Back to Input</button>
+        </div>
+        <div class="display-canvas" id="displayCanvas"></div>
+    </div>
+
+    <script>
+const DEMO_KEY = 'demo_24hr_report';
+let isBuildMode = false;
+let sections = [];
+let sectionIdCounter = 0;
+let phoneNumbers = {};
+let displayPages = [];
+let displayPageIdCounter = 0;
+let draggedSection = null;
+let dragOffsetX = 0, dragOffsetY = 0;
+let resizingSection = null;
+let resizeStartX = 0, resizeStartY = 0, resizeStartW = 0, resizeStartH = 0;
+let currentTutorialStep = 0;
+let currentDisplayPageId = null;
+const quillEditors = {};
+
+const modeToggle = document.getElementById('modeToggle');
+const modeLabel = document.getElementById('modeLabel');
+const buildToolbar = document.getElementById('buildToolbar');
+const canvas = document.getElementById('canvas');
+
+const tutorialSteps = [
+    { title: "👋 Welcome to the 24 Hour Report Demo!", content: `<p>This interactive demo lets you explore a fully customizable <span class="tutorial-highlight">24 Hour Report Builder</span> for healthcare facilities, hospitals, or any organization.</p><p>We've pre-populated sample sections. <strong>Everything is deletable and fully customizable!</strong></p><p>Your changes are saved in your browser automatically.</p>`, nextText: "Show Me The Basics →" },
+    { title: "🔀 Two Modes: Build & User", content: `<p>The system has two modes:</p><ul><li><span class="tutorial-highlight">User Mode</span> (blue) - For daily data entry</li><li><span class="tutorial-highlight">Build Mode</span> (green) - For designing layouts and adding sections</li></ul><p>Toggle between modes using the switch in the header!</p>`, nextText: "What Can I Build? →" },
+    { title: "📦 Section Types", content: `<ul><li><strong>Elements</strong> - Track numbers (beds, patients)</li><li><strong>Staff</strong> - Assign names to positions</li><li><strong>On-Call</strong> - Phone directory with click-to-call</li><li><strong>WhiteBoard</strong> - Rich text notes with status</li><li><strong>RRT</strong> - Rapid Response Team assignments</li><li><strong>Census</strong> - Auto-calculated totals</li></ul>`, nextText: "What About Display? →" },
+    { title: "📺 Data Pages (Display Mode)", content: `<p>Create read-only <span class="tutorial-highlight">Data Pages</span> perfect for wall-mounted displays or dashboards!</p><p>Each page can include any combination of sections. We've created a sample "Main Dashboard" you can try from the green dropdown.</p>`, nextText: "Let Me Try It! →" },
+    { title: "🎮 You're Ready to Explore!", content: `<ul><li>Click the <span class="tutorial-highlight">mode toggle</span> to switch to Build Mode</li><li>Drag sections to reposition them</li><li>Use <span class="tutorial-highlight">+ Add Section</span> to create new ones</li><li>Click the <span class="tutorial-highlight">green dropdown</span> to view the Data Page</li><li>Use <span class="tutorial-highlight">🔄 Reset</span> to start fresh</li></ul><p><strong>This is YOUR sandbox!</strong></p>`, nextText: "Start Exploring! 🚀" }
+];
+
+function showTutorial() {
+    const overlay = document.getElementById('tutorialOverlay');
+    const progress = document.getElementById('tutorialProgress');
+    progress.innerHTML = tutorialSteps.map((_, i) => `<div class="tutorial-dot ${i < currentTutorialStep ? 'completed' : ''} ${i === currentTutorialStep ? 'active' : ''}"></div>`).join('');
+    const step = tutorialSteps[currentTutorialStep];
+    document.getElementById('tutorialTitle').textContent = step.title;
+    document.getElementById('tutorialContent').innerHTML = step.content;
+    document.getElementById('tutorialNext').textContent = step.nextText;
+    overlay.classList.add('show');
+}
+function hideTutorial() { document.getElementById('tutorialOverlay').classList.remove('show'); localStorage.setItem('demo_tutorial_done', 'true'); }
+function nextTutorialStep() { currentTutorialStep++; currentTutorialStep >= tutorialSteps.length ? hideTutorial() : showTutorial(); }
+function restartTutorial() { currentTutorialStep = 0; showTutorial(); }
+document.getElementById('tutorialSkip').addEventListener('click', hideTutorial);
+document.getElementById('tutorialNext').addEventListener('click', nextTutorialStep);
+
+function saveToStorage() {
+    localStorage.setItem(DEMO_KEY, JSON.stringify({ sections, phoneNumbers, displayPages, sectionIdCounter, displayPageIdCounter, inputData: collectUserInputs() }));
+}
+function loadFromStorage() {
+    const saved = localStorage.getItem(DEMO_KEY);
+    if (!saved) return false;
+    try {
+        const data = JSON.parse(saved);
+        sectionIdCounter = data.sectionIdCounter || 0;
+        displayPageIdCounter = data.displayPageIdCounter || 0;
+        phoneNumbers = data.phoneNumbers || {};
+        displayPages = data.displayPages || [];
+        if (data.sections?.length) {
+            data.sections.forEach(s => { sections.push(s); renderSection(s); rebuildSectionItems(s); });
+            if (data.inputData) setTimeout(() => applyUserInputs(data.inputData), 100);
+            renderDisplayPageButtons();
+            return true;
+        }
+    } catch(e) { console.error(e); }
+    return false;
+}
+function resetDemo() { if(confirm('Reset the demo?')) { localStorage.removeItem(DEMO_KEY); localStorage.removeItem('demo_tutorial_done'); location.reload(); } }
+
+function rebuildSectionItems(sectionData) {
+    const sectionEl = document.querySelector(`[data-section-id="${sectionData.id}"]`);
+    if (!sectionEl || !sectionData.items) return;
+    if (sectionData.type === 'elements') sectionData.items.sort((a,b) => (a.rank||999) - (b.rank||999));
+    sectionData.items.forEach(item => {
+        if (sectionData.type === 'elements') rebuildElementItem(sectionEl, sectionData, item);
+        else if (sectionData.type === 'staff') rebuildStaffItem(sectionEl, sectionData, item);
+        else if (sectionData.type === 'oncall') rebuildOnCallItem(sectionEl, sectionData, item);
+    });
+    updateSectionMode(sectionEl);
+}
+
+function createPrebuiltSections() {
+    const prebuilt = [
+        { id: 'section-1', type: 'elements', title: 'Unit Status', x: 20, y: 20, width: 350, height: 280, items: [
+            { id: 'item-1', name: 'Total Beds', isCensus: true, rank: 1 },
+            { id: 'item-2', name: 'Occupied Beds', isCensus: false, rank: 2 },
+            { id: 'item-3', name: 'Available Beds', isCensus: false, rank: 3 },
+            { id: 'item-4', name: 'Pending Admissions', isCensus: false, rank: 4 }
+        ]},
+        { id: 'section-2', type: 'staff', title: 'Staff On Duty', x: 390, y: 20, width: 420, height: 250, items: [
+            { id: 'item-5', position: 'Charge Nurse', hasAssignment: true, shift: 'Day' },
+            { id: 'item-6', position: 'RN - Zone A', hasAssignment: true, shift: 'Day' },
+            { id: 'item-7', position: 'RN - Zone B', hasAssignment: true, shift: 'Day' }
+        ]},
+        { id: 'section-3', type: 'oncall', title: 'On-Call Directory', x: 830, y: 20, width: 350, height: 180, items: [
+            { id: 'item-8', position: 'Supervisor', isVisible: true },
+            { id: 'item-9', position: 'House MD', isVisible: true }
+        ]},
+        { id: 'section-4', type: 'communication', title: 'Shift Notes', x: 20, y: 320, width: 400, height: 200, status: 'green', items: [] },
+        { id: 'section-5', type: 'census', title: 'Total Census', x: 830, y: 220, width: 200, height: 150, censusSource: 'all', censusLabel: 'Current Census', items: [] },
+        { id: 'section-6', type: 'rrt', title: 'Rapid Response Team', x: 440, y: 290, width: 370, height: 200, items: [] }
+    ];
+    sectionIdCounter = 6;
+    prebuilt.forEach(s => { sections.push(s); renderSection(s); rebuildSectionItems(s); });
+    displayPages.push({ id: 'page-1', name: 'Main Dashboard', sections: [
+        { sectionId: 'section-1', x: 20, y: 20, width: 300, height: 250 },
+        { sectionId: 'section-2', x: 340, y: 20, width: 350, height: 250 },
+        { sectionId: 'section-5', x: 710, y: 20, width: 180, height: 140 },
+        { sectionId: 'section-4', x: 20, y: 290, width: 400, height: 180 }
+    ], scale: 1 });
+    displayPageIdCounter = 1;
+    phoneNumbers = { 'sarah johnson': '509-555-0101', 'dr. patel': '509-555-0103' };
+    renderDisplayPageButtons();
+    setTimeout(() => {
+        applyUserInputs({
+            'section-1': { type: 'elements', values: { 'item-1': '24', 'item-2': '18', 'item-3': '6', 'item-4': '2' }},
+            'section-2': { type: 'staff', values: { 'item-5': { name: 'Sarah Johnson', assignment: 'Rm 101-108' }, 'item-6': { name: 'Mike Chen', assignment: 'Rm 109-116' }, 'item-7': { name: 'Lisa Park', assignment: 'Rm 117-124' }}},
+            'section-3': { type: 'oncall', values: { 'item-8': { name: 'Amy Roberts', phone: '509-555-0201' }, 'item-9': { name: 'Dr. Patel', phone: '509-555-0202' }}},
+            'section-4': { type: 'communication', value: '<p><strong>Day Shift Notes:</strong></p><p>• Room 105 patient scheduled for CT at 2pm</p><p>• New admit expected around 3pm</p>', status: 'green' }
+        });
+        updateCensusDisplays();
+        saveToStorage();
+    }, 300);
+}
+
+document.getElementById('addSectionSelect').addEventListener('change', function() { if(this.value) { addSection(this.value); this.value = ''; } });
+document.getElementById('dataPageSelect')?.addEventListener('change', function() { if(this.value) { openDisplayPage(this.value); this.value = ''; } });
+modeToggle.addEventListener('change', function() { isBuildMode = !this.checked; updateMode(); saveToStorage(); });
+
+function updateMode() {
+    if (isBuildMode) {
+        modeLabel.textContent = 'BUILD MODE';
+        modeLabel.className = 'mode-label build';
+        buildToolbar.classList.remove('hidden');
+        canvas.classList.remove('user-mode');
+        canvas.classList.add('build-mode-canvas');
+        document.getElementById('saveBtn').classList.remove('hidden');
+    } else {
+        modeLabel.textContent = 'USER MODE';
+        modeLabel.className = 'mode-label user';
+        buildToolbar.classList.add('hidden');
+        canvas.classList.add('user-mode');
+        canvas.classList.remove('build-mode-canvas');
+        document.getElementById('saveBtn').classList.add('hidden');
+    }
+    document.querySelectorAll('.section').forEach(s => updateSectionMode(s));
+    Object.values(quillEditors).forEach(q => q.enable(!isBuildMode));
+}
+
+function updateSectionMode(sectionEl) {
+    const sectionData = sections.find(s => s.id === sectionEl.dataset.sectionId);
+    if (!sectionData) return;
+    if (isBuildMode) {
+        sectionEl.classList.add('build-mode');
+        sectionEl.classList.remove('user-mode');
+        sectionEl.querySelector('.section-controls')?.classList.remove('hidden');
+        sectionEl.querySelector('.resize-handle')?.classList.remove('hidden');
+        const titleSpan = sectionEl.querySelector('.section-title');
+        const titleInput = sectionEl.querySelector('.section-title-input');
+        if (titleSpan) titleSpan.classList.add('hidden');
+        if (titleInput) titleInput.classList.remove('hidden');
+    } else {
+        sectionEl.classList.remove('build-mode');
+        sectionEl.classList.add('user-mode');
+        sectionEl.querySelector('.section-controls')?.classList.add('hidden');
+        sectionEl.querySelector('.resize-handle')?.classList.add('hidden');
+        const titleSpan = sectionEl.querySelector('.section-title');
+        const titleInput = sectionEl.querySelector('.section-title-input');
+        if (titleSpan && titleInput) { titleSpan.textContent = titleInput.value; titleSpan.classList.remove('hidden'); titleInput.classList.add('hidden'); }
+    }
+    updateInputStates(sectionEl, sectionData.type);
+}
+
+function updateInputStates(sectionEl, type) {
+    sectionEl.querySelectorAll('.element-rank-input, .element-name-input, .census-label, .staff-position-input, .staff-assignment-label, .staff-shift-select, .oncall-visible-label, .row-delete-btn').forEach(el => el.classList.toggle('hidden', !isBuildMode));
+    sectionEl.querySelectorAll('.element-name, .staff-position').forEach(el => el.classList.toggle('hidden', isBuildMode));
+    sectionEl.querySelectorAll('.element-value-input, .staff-name-input, .staff-phone-input, .staff-assignment-input, .communication-textarea, .rrt-select').forEach(el => el.disabled = isBuildMode);
+}
+
+function addSection(type) {
+    const id = 'section-' + (++sectionIdCounter);
+    const titles = { elements: 'Facility Info', staff: 'Staff Positions', oncall: 'On Call', communication: 'WhiteBoard', rrt: 'RRT', census: 'Census' };
+    const widths = { communication: 350, rrt: 450, elements: 400, staff: 450, oncall: 500, census: 250 };
+    const heights = { communication: 250, rrt: 280, elements: 300, staff: 300, oncall: 300, census: 150 };
+    const sectionData = { id, type, title: titles[type] || 'Section', x: 50 + (sections.length * 30) % 300, y: 50 + (sections.length * 30) % 200, width: widths[type] || 400, height: heights[type] || 300, items: [] };
+    sections.push(sectionData);
+    renderSection(sectionData);
+    saveToStorage();
+}
+
+function renderSection(data) {
+    const section = document.createElement('div');
+    section.className = 'section build-mode';
+    section.dataset.sectionId = data.id;
+    section.style.cssText = `left:${data.x}px;top:${data.y}px;width:${data.width}px;height:${data.height}px;`;
+    const showAddBtn = !['communication', 'rrt', 'census'].includes(data.type);
+    const statusIndicator = data.type === 'communication' ? `<div class="status-indicator"><div class="status-dot green selected" data-status="green" onclick="setStatus('${data.id}','green')"></div><div class="status-dot yellow" data-status="yellow" onclick="setStatus('${data.id}','yellow')"></div><div class="status-dot red" data-status="red" onclick="setStatus('${data.id}','red')"></div></div>` : '';
+    section.innerHTML = `<div class="section-header"><span class="section-title hidden">${data.title}</span><input type="text" class="section-title-input" value="${data.title}"><span class="section-last-updated" data-section-id="${data.id}"></span><span class="type-badge ${data.type}">${data.type.toUpperCase()}</span>${statusIndicator}<div class="section-controls">${showAddBtn ? '<button class="section-btn add" title="Add Item">+</button>' : ''}<button class="section-btn delete" title="Delete Section">×</button></div></div><div class="section-content">${getInitialContent(data)}</div><div class="resize-handle"></div>`;
+    section.querySelector('.section-header').addEventListener('mousedown', e => { if (!isBuildMode || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return; startDrag(e, section); });
+    section.querySelector('.resize-handle').addEventListener('mousedown', e => { if (!isBuildMode) return; startResize(e, section); });
+    section.querySelector('.section-btn.add')?.addEventListener('click', () => addItemToSection(data.id));
+    section.querySelector('.section-btn.delete').addEventListener('click', () => deleteSection(data.id));
+    canvas.appendChild(section);
+    updateSectionMode(section);
+    if (data.type === 'communication') setTimeout(() => initQuillEditor(section, data.id), 100);
+    if (data.type === 'census') {
+        section.querySelector('.census-source-dropdown')?.addEventListener('change', () => { data.censusSource = section.querySelector('.census-source-dropdown').value; updateCensusDisplays(); saveToStorage(); });
+        section.querySelector('.census-label-input')?.addEventListener('input', e => { data.censusLabel = e.target.value; section.querySelector('.census-display-label').textContent = e.target.value; });
+        setTimeout(updateCensusSourceDropdowns, 100);
+    }
+    if (data.type === 'rrt') section.querySelectorAll('.rrt-select').forEach(sel => sel.addEventListener('change', () => { if (sel.value === '__other__') { const n = prompt('Enter name:'); if (n) { const opt = document.createElement('option'); opt.value = opt.textContent = n.trim(); sel.insertBefore(opt, sel.querySelector('option[value="__other__"]')); sel.value = n.trim(); sel.dataset.isOther = 'true'; sel.dataset.otherValue = n.trim(); } else sel.value = ''; } else { sel.dataset.isOther = 'false'; sel.dataset.otherValue = ''; } triggerAutoSave(data.id); }));
+}
+
+function getInitialContent(data) {
+    if (data.type === 'elements') return '<div class="elements-container"></div>';
+    if (data.type === 'staff') return '<div class="staff-container"></div>';
+    if (data.type === 'oncall') return '<div class="oncall-container"></div>';
+    if (data.type === 'communication') return `<div style="position:relative;height:100%;"><button class="comm-toolbar-toggle" onclick="toggleCommToolbar(this)">Tools</button><div class="communication-editor-container"><div class="communication-editor"></div></div></div>`;
+    if (data.type === 'rrt') { const roles = ['Team Leader', 'I.V. Med Nurse', 'Airway', 'Compressions', 'Recorder']; return `<div class="rrt-container"><div class="rrt-header"><span>Role</span><span>Day</span><span>Night</span></div>${roles.map(r => `<div class="rrt-row"><span class="rrt-role">${r}</span><select class="rrt-select" data-role="${r}" data-shift="day" disabled><option value="">--</option><option value="__other__">Other</option></select><select class="rrt-select" data-role="${r}" data-shift="night" disabled><option value="">--</option><option value="__other__">Other</option></select></div>`).join('')}</div>`; }
+    if (data.type === 'census') return `<div class="census-source-select" style="margin-bottom:10px;"><label style="font-size:12px;color:#666;">Source: </label><select class="census-source-dropdown" style="padding:4px 8px;font-size:12px;border:1px solid #ccc;border-radius:4px;"><option value="all">All Elements</option></select></div><div class="census-label-edit" style="margin-bottom:10px;"><label style="font-size:12px;color:#666;">Label: </label><input type="text" class="census-label-input" value="${data.censusLabel || 'Total Census'}" style="padding:4px 8px;font-size:12px;border:1px solid #ccc;border-radius:4px;width:150px;"></div><div class="census-display"><span class="census-display-label">${data.censusLabel || 'Total Census'}</span><span class="census-display-value">0</span></div>`;
+    return '';
+}
+
+function initQuillEditor(sectionEl, sectionId) {
+    const editorContainer = sectionEl.querySelector('.communication-editor');
+    if (!editorContainer || quillEditors[sectionId]) return;
+    const quill = new Quill(editorContainer, { theme: 'snow', modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'color': [] }], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['clean']] }, placeholder: 'Enter notes...' });
+    quillEditors[sectionId] = quill;
+    quill.on('text-change', () => { if (!isBuildMode) triggerAutoSave(sectionId); });
+    if (isBuildMode) quill.enable(false);
+}
+function toggleCommToolbar(btn) { btn.parentElement.querySelector('.communication-editor-container')?.classList.toggle('show-toolbar'); btn.textContent = btn.parentElement.querySelector('.communication-editor-container').classList.contains('show-toolbar') ? 'Hide' : 'Tools'; }
+
+function addItemToSection(sectionId) {
+    const sectionData = sections.find(s => s.id === sectionId);
+    const sectionEl = document.querySelector(`[data-section-id="${sectionId}"]`);
+    if (!sectionData || !sectionEl) return;
+    const itemId = 'item-' + Date.now();
+    if (sectionData.type === 'elements') { const item = { id: itemId, name: 'New Element', isCensus: false, rank: sectionData.items.length + 1 }; sectionData.items.push(item); rebuildElementItem(sectionEl, sectionData, item); }
+    else if (sectionData.type === 'staff') { const item = { id: itemId, position: 'New Position', hasAssignment: false, shift: 'Day' }; sectionData.items.push(item); rebuildStaffItem(sectionEl, sectionData, item); }
+    else if (sectionData.type === 'oncall') { const item = { id: itemId, position: 'New Position', isVisible: true }; sectionData.items.push(item); rebuildOnCallItem(sectionEl, sectionData, item); }
+    updateSectionMode(sectionEl);
+    saveToStorage();
+}
+
+function rebuildElementItem(sectionEl, sectionData, itemData) {
+    const container = sectionEl.querySelector('.elements-container');
+    const row = document.createElement('div');
+    row.className = 'element-row';
+    row.dataset.itemId = itemData.id;
+    row.innerHTML = `<input type="number" class="element-rank-input" value="${itemData.rank||1}" min="1" style="width:40px;text-align:center;"><input type="text" class="element-name-input" value="${itemData.name}" placeholder="Element name"><span class="element-name hidden">${itemData.name}</span><label class="census-label"><input type="checkbox" class="element-census-check" ${itemData.isCensus?'checked':''}> Census</label><input type="text" class="element-value-input" placeholder="0" disabled><button class="row-delete-btn">×</button>`;
+    row.querySelector('.element-rank-input').addEventListener('change', e => { itemData.rank = parseInt(e.target.value)||1; saveToStorage(); });
+    row.querySelector('.element-name-input').addEventListener('input', e => { itemData.name = e.target.value; row.querySelector('.element-name').textContent = e.target.value; saveToStorage(); });
+    row.querySelector('.element-census-check').addEventListener('change', e => { itemData.isCensus = e.target.checked; updateCensusDisplays(); saveToStorage(); });
+    row.querySelector('.element-value-input').addEventListener('input', () => { updateCensusDisplays(); triggerAutoSave(sectionData.id); });
+    row.querySelector('.row-delete-btn').addEventListener('click', () => { row.remove(); sectionData.items = sectionData.items.filter(i => i.id !== itemData.id); saveToStorage(); });
+    container.appendChild(row);
+}
+
+function rebuildStaffItem(sectionEl, sectionData, itemData) {
+    const container = sectionEl.querySelector('.staff-container');
+    const row = document.createElement('div');
+    row.className = 'staff-row';
+    row.dataset.itemId = itemData.id;
+    row.innerHTML = `<input type="text" class="staff-position-input" value="${itemData.position||''}" placeholder="Position"><span class="staff-position hidden">${itemData.position||''}</span><label class="staff-assignment-label"><input type="checkbox" class="staff-has-assignment-check" ${itemData.hasAssignment?'checked':''}> Assign</label><select class="staff-shift-select"><option value="Day" ${itemData.shift==='Day'?'selected':''}>Day</option><option value="Night" ${itemData.shift==='Night'?'selected':''}>Night</option></select><input type="text" class="staff-name-input" placeholder="Enter name" disabled><input type="text" class="staff-assignment-input ${itemData.hasAssignment?'':'hidden'}" placeholder="Assignment" disabled><button class="row-delete-btn">×</button>`;
+    row.querySelector('.staff-position-input').addEventListener('input', e => { itemData.position = e.target.value; row.querySelector('.staff-position').textContent = e.target.value; saveToStorage(); });
+    row.querySelector('.staff-has-assignment-check').addEventListener('change', e => { itemData.hasAssignment = e.target.checked; row.querySelector('.staff-assignment-input').classList.toggle('hidden', !e.target.checked); saveToStorage(); });
+    row.querySelector('.staff-shift-select').addEventListener('change', e => { itemData.shift = e.target.value; saveToStorage(); });
+    row.querySelector('.staff-name-input').addEventListener('input', () => { triggerAutoSave(sectionData.id); updateRRTDropdowns(); });
+    row.querySelector('.staff-assignment-input').addEventListener('input', () => triggerAutoSave(sectionData.id));
+    row.querySelector('.row-delete-btn').addEventListener('click', () => { row.remove(); sectionData.items = sectionData.items.filter(i => i.id !== itemData.id); saveToStorage(); });
+    container.appendChild(row);
+}
+
+function rebuildOnCallItem(sectionEl, sectionData, itemData) {
+    const container = sectionEl.querySelector('.oncall-container');
+    const row = document.createElement('div');
+    row.className = 'staff-row';
+    row.dataset.itemId = itemData.id;
+    if (itemData.isVisible === undefined) itemData.isVisible = true;
+    row.innerHTML = `<label class="oncall-visible-label"><input type="checkbox" class="oncall-visible-check" ${itemData.isVisible?'checked':''}> Show</label><input type="text" class="staff-position-input" value="${itemData.position||''}" placeholder="Position"><span class="staff-position hidden">${itemData.position||''}</span><input type="text" class="staff-name-input" placeholder="Enter name" disabled><input type="text" class="staff-phone-input" placeholder="Phone" disabled><a class="phone-call-btn" href="tel:" style="display:none;">📞</a><button class="row-delete-btn">×</button>`;
+    row.querySelector('.staff-position-input').addEventListener('input', e => { itemData.position = e.target.value; row.querySelector('.staff-position').textContent = e.target.value; saveToStorage(); });
+    row.querySelector('.oncall-visible-check').addEventListener('change', e => { itemData.isVisible = e.target.checked; saveToStorage(); });
+    const nameInput = row.querySelector('.staff-name-input');
+    const phoneInput = row.querySelector('.staff-phone-input');
+    nameInput.addEventListener('input', () => { phoneInput.value = lookupPhoneNumber(nameInput.value) || ''; triggerAutoSave(sectionData.id); });
+    phoneInput.addEventListener('input', () => triggerAutoSave(sectionData.id));
+    row.querySelector('.row-delete-btn').addEventListener('click', () => { row.remove(); sectionData.items = sectionData.items.filter(i => i.id !== itemData.id); saveToStorage(); });
+    container.appendChild(row);
+}
+
+function deleteSection(sectionId) { if (!confirm('Delete this section?')) return; document.querySelector(`[data-section-id="${sectionId}"]`)?.remove(); sections = sections.filter(s => s.id !== sectionId); saveToStorage(); }
+
+function startDrag(e, section) { draggedSection = section; const rect = section.getBoundingClientRect(); dragOffsetX = e.clientX - rect.left; dragOffsetY = e.clientY - rect.top; section.classList.add('dragging'); e.preventDefault(); }
+function startResize(e, section) { resizingSection = section; resizeStartX = e.clientX; resizeStartY = e.clientY; resizeStartW = section.offsetWidth; resizeStartH = section.offsetHeight; e.preventDefault(); e.stopPropagation(); }
+document.addEventListener('mousemove', e => {
+    if (draggedSection) {
+        const canvasRect = canvas.getBoundingClientRect();
+        let newX = Math.max(0, e.clientX - canvasRect.left - dragOffsetX + canvas.scrollLeft);
+        let newY = Math.max(0, e.clientY - canvasRect.top - dragOffsetY + canvas.scrollTop);
+        draggedSection.style.left = newX + 'px';
+        draggedSection.style.top = newY + 'px';
+        const sectionData = sections.find(s => s.id === draggedSection.dataset.sectionId);
+        if (sectionData) { sectionData.x = newX; sectionData.y = newY; }
+    }
+    if (resizingSection) {
+        const newW = Math.max(200, resizeStartW + e.clientX - resizeStartX);
+        const newH = Math.max(150, resizeStartH + e.clientY - resizeStartY);
+        resizingSection.style.width = newW + 'px';
+        resizingSection.style.height = newH + 'px';
+        const sectionData = sections.find(s => s.id === resizingSection.dataset.sectionId);
+        if (sectionData) { sectionData.width = newW; sectionData.height = newH; }
+    }
+});
+document.addEventListener('mouseup', () => { if (draggedSection) { draggedSection.classList.remove('dragging'); draggedSection = null; saveToStorage(); } if (resizingSection) { resizingSection = null; saveToStorage(); } });
+
+function setStatus(sectionId, status) {
+    const sectionEl = document.querySelector(`[data-section-id="${sectionId}"]`);
+    const sectionData = sections.find(s => s.id === sectionId);
+    if (!sectionEl || !sectionData) return;
+    sectionData.status = status;
+    sectionEl.querySelectorAll('.status-dot').forEach(d => d.classList.toggle('selected', d.dataset.status === status));
+    sectionEl.classList.remove('status-yellow', 'status-red');
+    if (status === 'yellow') sectionEl.classList.add('status-yellow');
+    if (status === 'red') sectionEl.classList.add('status-red');
+    triggerAutoSave(sectionId);
+}
+
+function updateCensusSourceDropdowns() {
+    const elementsSections = sections.filter(s => s.type === 'elements');
+    document.querySelectorAll('.census-source-dropdown').forEach(dd => {
+        const val = dd.value;
+        dd.innerHTML = '<option value="all">All Elements</option>' + elementsSections.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
+        if (val) dd.value = val;
+    });
+}
+function updateCensusDisplays() {
+    updateCensusSourceDropdowns();
+    sections.filter(s => s.type === 'census').forEach(sd => {
+        const sectionEl = document.querySelector(`[data-section-id="${sd.id}"]`);
+        if (!sectionEl) return;
+        const sourceId = sectionEl.querySelector('.census-source-dropdown')?.value || 'all';
+        let total = 0;
+        sections.filter(s => s.type === 'elements' && (sourceId === 'all' || s.id === sourceId)).forEach(es => {
+            es.items.filter(i => i.isCensus).forEach(item => {
+                const row = document.querySelector(`[data-section-id="${es.id}"] [data-item-id="${item.id}"]`);
+                total += parseInt(row?.querySelector('.element-value-input')?.value) || 0;
+            });
+        });
+        const dv = sectionEl.querySelector('.census-display-value');
+        if (dv) dv.textContent = total;
+    });
+}
+
+function getStaffNames() { const names = []; sections.filter(s => s.type === 'staff').forEach(sd => { const el = document.querySelector(`[data-section-id="${sd.id}"]`); sd.items.forEach(i => { const row = el?.querySelector(`[data-item-id="${i.id}"]`); const n = row?.querySelector('.staff-name-input')?.value?.trim(); if (n) names.push(n); }); }); return names; }
+function updateRRTDropdowns() {
+    const names = getStaffNames();
+    document.querySelectorAll('.rrt-select').forEach(sel => {
+        const val = sel.value, isOther = sel.dataset.isOther === 'true', otherVal = sel.dataset.otherValue || '';
+        sel.innerHTML = '<option value="">--</option>' + names.map(n => `<option value="${n}">${n}</option>`).join('') + '<option value="__other__">Other</option>';
+        if (isOther && otherVal) { const opt = document.createElement('option'); opt.value = opt.textContent = otherVal; sel.insertBefore(opt, sel.querySelector('option[value="__other__"]')); sel.value = otherVal; }
+        else if (val && val !== '__other__') sel.value = val;
+    });
+}
+
+function lookupPhoneNumber(name) { return phoneNumbers[name?.trim()?.toLowerCase()] || ''; }
+
+let pendingSaves = {};
+function triggerAutoSave(sectionId) { if (isBuildMode || !sectionId) return; if (pendingSaves[sectionId]) clearTimeout(pendingSaves[sectionId]); pendingSaves[sectionId] = setTimeout(() => { saveToStorage(); delete pendingSaves[sectionId]; }, 500); }
+
+function collectUserInputs() {
+    const inputs = {};
+    sections.forEach(sd => {
+        const sectionEl = document.querySelector(`[data-section-id="${sd.id}"]`);
+        if (!sectionEl) return;
+        if (sd.type === 'elements') { inputs[sd.id] = { type: 'elements', values: {} }; sd.items.forEach(i => { const row = sectionEl.querySelector(`[data-item-id="${i.id}"]`); inputs[sd.id].values[i.id] = row?.querySelector('.element-value-input')?.value || ''; }); }
+        else if (sd.type === 'staff') { inputs[sd.id] = { type: 'staff', values: {} }; sd.items.forEach(i => { const row = sectionEl.querySelector(`[data-item-id="${i.id}"]`); inputs[sd.id].values[i.id] = { name: row?.querySelector('.staff-name-input')?.value || '', assignment: row?.querySelector('.staff-assignment-input')?.value || '' }; }); }
+        else if (sd.type === 'oncall') { inputs[sd.id] = { type: 'oncall', values: {} }; sd.items.forEach(i => { const row = sectionEl.querySelector(`[data-item-id="${i.id}"]`); inputs[sd.id].values[i.id] = { name: row?.querySelector('.staff-name-input')?.value || '', phone: row?.querySelector('.staff-phone-input')?.value || '' }; }); }
+        else if (sd.type === 'communication') { const q = quillEditors[sd.id]; inputs[sd.id] = { type: 'communication', value: q ? q.root.innerHTML : '', status: sd.status || 'green' }; }
+        else if (sd.type === 'rrt') { inputs[sd.id] = { type: 'rrt', values: {} }; sectionEl.querySelectorAll('.rrt-select').forEach(sel => { inputs[sd.id].values[sel.dataset.role + '_' + sel.dataset.shift] = { value: sel.value, isOther: sel.dataset.isOther === 'true', otherValue: sel.dataset.otherValue || '' }; }); }
+        else if (sd.type === 'census') { inputs[sd.id] = { type: 'census', censusSource: sectionEl.querySelector('.census-source-dropdown')?.value || 'all' }; }
+    });
+    return inputs;
+}
+
+function applyUserInputs(inputData) {
+    if (!inputData) return;
+    Object.keys(inputData).forEach(sectionId => {
+        const si = inputData[sectionId], sectionEl = document.querySelector(`[data-section-id="${sectionId}"]`);
+        if (!sectionEl) return;
+        if (si.type === 'elements' && si.values) Object.keys(si.values).forEach(itemId => { const row = sectionEl.querySelector(`[data-item-id="${itemId}"]`); if (row) row.querySelector('.element-value-input').value = si.values[itemId]; });
+        else if (si.type === 'staff' && si.values) Object.keys(si.values).forEach(itemId => { const row = sectionEl.querySelector(`[data-item-id="${itemId}"]`); if (row) { row.querySelector('.staff-name-input').value = si.values[itemId].name || ''; row.querySelector('.staff-assignment-input').value = si.values[itemId].assignment || ''; } });
+        else if (si.type === 'oncall' && si.values) Object.keys(si.values).forEach(itemId => { const row = sectionEl.querySelector(`[data-item-id="${itemId}"]`); if (row) { row.querySelector('.staff-name-input').value = si.values[itemId].name || ''; row.querySelector('.staff-phone-input').value = si.values[itemId].phone || ''; } });
+        else if (si.type === 'communication') { const q = quillEditors[sectionId]; if (q) q.root.innerHTML = si.value || ''; else setTimeout(() => { const q2 = quillEditors[sectionId]; if (q2) q2.root.innerHTML = si.value || ''; }, 200); if (si.status) setStatus(sectionId, si.status); }
+        else if (si.type === 'rrt' && si.values) Object.keys(si.values).forEach(key => { const [role, shift] = [key.split('_').slice(0,-1).join('_'), key.split('_').pop()]; const sel = sectionEl.querySelector(`.rrt-select[data-role="${role}"][data-shift="${shift}"]`); if (sel) { const sv = si.values[key]; if (typeof sv === 'string') sel.value = sv; else if (sv.isOther && sv.otherValue) { const opt = document.createElement('option'); opt.value = opt.textContent = sv.otherValue; sel.insertBefore(opt, sel.querySelector('option[value="__other__"]')); sel.value = sv.otherValue; sel.dataset.isOther = 'true'; sel.dataset.otherValue = sv.otherValue; } else sel.value = sv.value || ''; } });
+        else if (si.type === 'census') { const dd = sectionEl.querySelector('.census-source-dropdown'); if (dd && si.censusSource) dd.value = si.censusSource; }
+    });
+    updateRRTDropdowns();
+    setTimeout(updateCensusDisplays, 300);
+}
+
+function renderDisplayPageButtons() {
+    const sel = document.getElementById('dataPageSelect');
+    sel.innerHTML = '<option value="">📺 Data Pages</option>' + displayPages.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    sel.style.display = displayPages.length ? 'block' : 'none';
+}
+function openAddPageDialog() { const name = prompt('Enter page name:'); if (!name?.trim()) return; displayPages.push({ id: 'page-' + (++displayPageIdCounter), name: name.trim(), sections: [] }); openPageBuilder(displayPages[displayPages.length-1].id); saveToStorage(); }
+function openManagePagesDialog() { if (!displayPages.length) { alert('No pages yet. Use "Add Page".'); return; } const input = prompt('Pages:\n' + displayPages.map((p,i) => (i+1)+'. '+p.name).join('\n') + '\n\nEnter # to edit, d# to delete, r# to rename:'); if (!input) return; const t = input.trim().toLowerCase(); if (t.startsWith('d')) { const n = parseInt(t.slice(1))-1; if (n>=0 && n<displayPages.length && confirm(`Delete "${displayPages[n].name}"?`)) { displayPages.splice(n,1); renderDisplayPageButtons(); saveToStorage(); } } else if (t.startsWith('r')) { const n = parseInt(t.slice(1))-1; if (n>=0 && n<displayPages.length) { const newName = prompt(`New name for "${displayPages[n].name}":`, displayPages[n].name); if (newName?.trim()) { displayPages[n].name = newName.trim(); renderDisplayPageButtons(); saveToStorage(); } } } else { const n = parseInt(t)-1; if (n>=0 && n<displayPages.length) openPageBuilder(displayPages[n].id); } }
+function openPageBuilder(pageId) {
+    const page = displayPages.find(p => p.id === pageId);
+    if (!page) return;
+    document.getElementById('pageBuilderSection')?.remove();
+    const builder = document.createElement('div');
+    builder.id = 'pageBuilderSection';
+    builder.className = 'section';
+    builder.style.cssText = 'position:absolute;left:50px;top:50px;width:400px;z-index:999;background:white;border:2px solid #2196F3;';
+    builder.innerHTML = `<div class="section-header" style="background:#2196F3;color:white;cursor:default;"><span class="section-title" style="color:white;">Page Builder: ${page.name}</span><div class="section-controls"><button class="section-btn delete" onclick="closePageBuilder()" title="Close">×</button></div></div><div class="section-content" style="display:flex;flex-direction:column;"><div style="font-size:12px;color:#666;margin-bottom:10px;">Select sections for this page:</div><div id="pageSectionsList" style="max-height:250px;overflow-y:auto;border:1px solid #ccc;border-radius:4px;padding:10px;">${sections.length ? sections.map(s => `<div style="padding:5px 0;"><label><input type="checkbox" class="page-section-check" data-section-id="${s.id}" ${page.sections.some(ps=>ps.sectionId===s.id)?'checked':''}> ${s.title} (${s.type.toUpperCase()})</label></div>`).join('') : '<div style="color:#999;">No sections yet.</div>'}</div><div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px;"><button onclick="closePageBuilder()" style="padding:8px 16px;background:#f44336;color:white;border:none;border-radius:4px;cursor:pointer;">Cancel</button><button onclick="savePageBuilder('${pageId}')" style="padding:8px 16px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;">Save</button><button onclick="previewDisplayPage('${pageId}')" style="padding:8px 16px;background:#2196F3;color:white;border:none;border-radius:4px;cursor:pointer;">Preview</button></div></div>`;
+    canvas.appendChild(builder);
+}
+function closePageBuilder() { document.getElementById('pageBuilderSection')?.remove(); }
+function savePageBuilder(pageId) { const page = displayPages.find(p => p.id === pageId); if (!page) return; const selected = []; let x = 20, y = 20; document.querySelectorAll('.page-section-check:checked').forEach(cb => { const sid = cb.dataset.sectionId, existing = page.sections.find(s => s.sectionId === sid); selected.push({ sectionId: sid, x: existing?.x || x, y: existing?.y || y, width: existing?.width || 300, height: existing?.height || 200 }); x += 320; if (x > 700) { x = 20; y += 220; } }); page.sections = selected; renderDisplayPageButtons(); saveToStorage(); closePageBuilder(); alert(`Page "${page.name}" saved with ${selected.length} sections.`); }
+function previewDisplayPage(pageId) { savePageBuilder(pageId); openDisplayPage(pageId); }
+function openDisplayPage(pageId) {
+    const page = displayPages.find(p => p.id === pageId);
+    if (!page) return;
+    currentDisplayPageId = pageId;
+    document.getElementById('displayTitle').textContent = page.name;
+    const hb = document.getElementById('displayHeaderButtons');
+    hb.innerHTML = displayPages.length > 1 ? `<select class="data-page-dropdown" onchange="if(this.value)openDisplayPage(this.value)"><option value="">Other Pages</option>${displayPages.filter(p=>p.id!==pageId).map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>` : '';
+    const dc = document.getElementById('displayCanvas');
+    dc.innerHTML = '';
+    page.sections.forEach(ps => {
+        const sd = sections.find(s => s.id === ps.sectionId);
+        if (!sd) return;
+        const ds = document.createElement('div');
+        ds.className = 'display-section';
+        ds.style.cssText = `left:${ps.x}px;top:${ps.y}px;width:${ps.width}px;height:${ps.height}px;`;
+        ds.innerHTML = `<div class="display-section-header">${sd.title}</div><div class="display-section-content">${getDisplayContent(sd)}</div>`;
+        dc.appendChild(ds);
+    });
+    document.getElementById('displayOverlay').classList.add('show');
+}
+function getDisplayContent(sd) {
+    const sectionEl = document.querySelector(`[data-section-id="${sd.id}"]`);
+    if (sd.type === 'elements') return sd.items.map(i => { const row = sectionEl?.querySelector(`[data-item-id="${i.id}"]`); return `<div class="display-row"><span class="display-label">${i.name}</span><span class="display-value">${row?.querySelector('.element-value-input')?.value||'0'}</span></div>`; }).join('');
+    if (sd.type === 'staff') return sd.items.map(i => { const row = sectionEl?.querySelector(`[data-item-id="${i.id}"]`); const n = row?.querySelector('.staff-name-input')?.value||'', a = row?.querySelector('.staff-assignment-input')?.value||''; return `<div class="display-row"><span class="display-label">${i.position}</span><span class="display-value">${n}${a?' - '+a:''}</span></div>`; }).join('');
+    if (sd.type === 'oncall') return sd.items.map(i => { const row = sectionEl?.querySelector(`[data-item-id="${i.id}"]`); const n = row?.querySelector('.staff-name-input')?.value||'', p = row?.querySelector('.staff-phone-input')?.value||''; return `<div class="display-row"><span class="display-label">${i.position}</span><span class="display-value">${n}${p?' - '+p:''}</span></div>`; }).join('');
+    if (sd.type === 'communication') { const q = quillEditors[sd.id]; return `<div>${q?q.root.innerHTML:''}</div>`; }
+    if (sd.type === 'rrt') { const roles = ['Team Leader','I.V. Med Nurse','Airway','Compressions','Recorder']; return `<div class="display-rrt-table"><div class="display-rrt-header"><span>Role</span><span>Day</span><span>Night</span></div>${roles.map(r => { const ds = sectionEl?.querySelector(`.rrt-select[data-role="${r}"][data-shift="day"]`)?.value||'-', ns = sectionEl?.querySelector(`.rrt-select[data-role="${r}"][data-shift="night"]`)?.value||'-'; return `<div class="display-rrt-row"><span class="display-rrt-role">${r}</span><span class="display-rrt-value">${ds}</span><span class="display-rrt-value">${ns}</span></div>`; }).join('')}</div>`; }
+    if (sd.type === 'census') return `<div class="display-census-value">${sectionEl?.querySelector('.census-display-value')?.textContent||'0'}</div>`;
+    return '<div style="color:#666;">No data</div>';
+}
+function closeDisplayPage() { document.getElementById('displayOverlay').classList.remove('show'); currentDisplayPageId = null; }
+
+function openPhoneNumbersEditor() {
+    document.getElementById('phoneEditorSection')?.remove();
+    const text = Object.keys(phoneNumbers).sort().map(n => n + ', ' + phoneNumbers[n]).join('\n');
+    const editor = document.createElement('div');
+    editor.id = 'phoneEditorSection';
+    editor.className = 'section';
+    editor.style.cssText = 'position:absolute;left:50px;top:50px;width:450px;height:400px;z-index:999;background:white;border:2px solid #2196F3;';
+    editor.innerHTML = `<div class="section-header" style="background:#2196F3;color:white;cursor:default;"><span class="section-title" style="color:white;">Phone Numbers</span><div class="section-controls"><button class="section-btn delete" onclick="closePhoneNumbersEditor()" title="Close">×</button></div></div><div class="section-content" style="display:flex;flex-direction:column;height:calc(100% - 40px);"><div style="font-size:12px;color:#666;margin-bottom:10px;">One per line: Name, Phone</div><textarea id="phoneNumbersTextarea" style="flex:1;width:100%;padding:10px;font-family:monospace;font-size:13px;border:1px solid #ccc;border-radius:4px;resize:none;">${text}</textarea><div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;"><button onclick="closePhoneNumbersEditor()" style="padding:8px 16px;background:#f44336;color:white;border:none;border-radius:4px;cursor:pointer;">Cancel</button><button onclick="savePhoneNumbers()" style="padding:8px 16px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;">Save</button></div></div>`;
+    canvas.appendChild(editor);
+}
+function closePhoneNumbersEditor() { document.getElementById('phoneEditorSection')?.remove(); }
+function savePhoneNumbers() { phoneNumbers = {}; document.getElementById('phoneNumbersTextarea').value.split('\n').forEach(line => { const ci = line.indexOf(','); if (ci > 0) { const n = line.substring(0,ci).trim().toLowerCase(), p = line.substring(ci+1).trim(); if (n && p) phoneNumbers[n] = p; } }); saveToStorage(); closePhoneNumbersEditor(); alert('Phone numbers saved!'); }
+
+document.getElementById('saveBtn').addEventListener('click', () => { sections.forEach(s => { const el = document.querySelector(`[data-section-id="${s.id}"]`); const ti = el?.querySelector('.section-title-input'); if (ti) s.title = ti.value; }); saveToStorage(); alert('Layout saved!'); });
+
+function updateDateTime() { const now = new Date(); const ts = now.toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit', hour12:true }); document.getElementById('dateTimeDisplay').textContent = ts; document.getElementById('displayDateTime').textContent = ts; }
+
+function init() {
+    isBuildMode = false;
+    modeToggle.checked = true;
+    updateMode();
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+    if (!loadFromStorage()) createPrebuiltSections();
+    if (!localStorage.getItem('demo_tutorial_done')) setTimeout(showTutorial, 500);
+}
+
+init();
+    </script>
+</body>
+</html>
