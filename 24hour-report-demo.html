@@ -545,6 +545,347 @@ body {
 .build-mode .census-source-select { display: block !important; }
 .user-mode .census-label-edit { display: none !important; }
 .build-mode .census-label-edit { display: block !important; }
+
+/* ===== MOBILE STYLES ===== */
+@media (max-width: 640px) {
+    .build-toolbar,
+    #saveBtn,
+    .resize-handle,
+    .section-controls,
+    .section-title-input,
+    .element-rank-input,
+    .element-name-input,
+    .census-label,
+    .row-delete-btn,
+    .staff-position-input,
+    .staff-assignment-label,
+    .staff-shift-select,
+    .oncall-visible-label,
+    .census-source-select,
+    .census-label-edit {
+        display: none !important;
+    }
+
+    .section-title,
+    .element-name,
+    .staff-position {
+        display: block !important;
+    }
+
+    .mode-toggle {
+        display: none !important;
+    }
+
+    body {
+        overflow-y: auto !important;
+        height: auto !important;
+    }
+
+    .header {
+        padding: 10px 15px;
+        flex-wrap: wrap;
+    }
+
+    .header-title {
+        font-size: 16px;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: center;
+        margin-top: 8px;
+    }
+
+    #dateTimeDisplay {
+        display: none !important;
+    }
+
+    .canvas {
+        position: relative !important;
+        overflow: visible !important;
+        padding: 15px;
+        background: #1a1a2e !important;
+        min-height: 100vh;
+    }
+
+    .section {
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin-bottom: 15px;
+        border: none !important;
+        border-radius: 12px;
+        background: #16213e !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .section.status-yellow {
+        border-left: 4px solid #FFC107 !important;
+    }
+
+    .section.status-red {
+        border-left: 4px solid #f44336 !important;
+    }
+
+    .section-header {
+        background: #0f3460 !important;
+        padding: 15px;
+        cursor: default !important;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .section-title {
+        color: white !important;
+        font-size: 16px !important;
+    }
+
+    .section-last-updated {
+        color: #a0a0a0 !important;
+        font-size: 10px !important;
+    }
+
+    .type-badge {
+        font-size: 9px;
+        padding: 3px 8px;
+    }
+
+    .section-content {
+        padding: 15px;
+        overflow: visible !important;
+        max-height: none !important;
+        height: auto !important;
+    }
+
+    .element-row {
+        background: rgba(255,255,255,0.05) !important;
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .element-name {
+        color: #a0a0a0 !important;
+        font-size: 14px !important;
+    }
+
+    .element-value-input {
+        width: 70px !important;
+        padding: 10px !important;
+        font-size: 16px !important;
+        background: #0f3460 !important;
+        border: 1px solid #1a3a5c !important;
+        color: white !important;
+        border-radius: 8px !important;
+        text-align: center !important;
+    }
+
+    .staff-row {
+        background: rgba(255,255,255,0.05) !important;
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 8px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .staff-position {
+        color: #a0a0a0 !important;
+        font-size: 12px !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .staff-name-input,
+    .staff-phone-input,
+    .staff-assignment-input {
+        width: 100% !important;
+        padding: 12px !important;
+        font-size: 16px !important;
+        background: #0f3460 !important;
+        border: 1px solid #1a3a5c !important;
+        color: white !important;
+        border-radius: 8px !important;
+    }
+
+    .communication-editor-container {
+        height: auto !important;
+    }
+
+    .communication-editor-container .ql-container {
+        background: #0f3460 !important;
+        border-color: #1a3a5c !important;
+        border-radius: 8px !important;
+    }
+
+    .communication-editor-container .ql-editor {
+        min-height: 100px !important;
+        color: white !important;
+    }
+
+    .comm-toolbar-toggle {
+        display: none !important;
+    }
+
+    .rrt-container {
+        color: white;
+    }
+
+    .rrt-header {
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 11px;
+        color: #a0a0a0;
+    }
+
+    .rrt-row {
+        background: rgba(255,255,255,0.03);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 8px;
+    }
+
+    .rrt-role {
+        color: #a0a0a0 !important;
+        font-size: 12px !important;
+    }
+
+    .rrt-select {
+        background: #0f3460 !important;
+        border: 1px solid #1a3a5c !important;
+        color: white !important;
+        font-size: 14px !important;
+        padding: 8px !important;
+        border-radius: 8px !important;
+    }
+
+    .census-display {
+        padding: 20px;
+    }
+
+    .census-display-label {
+        color: #a0a0a0 !important;
+        font-size: 14px !important;
+    }
+
+    .census-display-value {
+        font-size: 48px !important;
+        color: #e94560 !important;
+    }
+
+    .status-indicator {
+        display: none !important;
+    }
+
+    #displayPageButtons {
+        width: 100%;
+    }
+
+    #dataPageSelect {
+        width: 100% !important;
+        padding: 12px !important;
+        font-size: 16px !important;
+    }
+
+    .btn {
+        padding: 10px 15px;
+        font-size: 13px;
+    }
+
+    .demo-badge {
+        font-size: 9px;
+        padding: 3px 8px;
+    }
+
+    /* Mobile Display Page */
+    .display-header {
+        flex-wrap: wrap;
+        padding: 12px 15px;
+    }
+
+    .display-title {
+        font-size: 16px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    #displayDateTime {
+        display: none !important;
+    }
+
+    #displayHeaderButtons {
+        width: 100%;
+        margin: 0 0 10px 0 !important;
+    }
+
+    .display-close-btn {
+        width: 100%;
+    }
+
+    .display-canvas {
+        padding: 15px;
+    }
+
+    .display-section {
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        margin-bottom: 15px;
+        border-radius: 12px;
+    }
+
+    .display-section-header {
+        padding: 15px;
+        font-size: 14px;
+    }
+
+    .display-section-content {
+        padding: 15px;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    .display-row {
+        padding: 10px 0;
+    }
+
+    .display-census-value {
+        font-size: 48px !important;
+    }
+
+    .display-rrt-header,
+    .display-rrt-row {
+        font-size: 12px;
+    }
+
+    /* Tutorial mobile adjustments */
+    .tutorial-modal {
+        padding: 20px;
+        margin: 10px;
+    }
+
+    .tutorial-title {
+        font-size: 18px;
+    }
+
+    .tutorial-content {
+        font-size: 14px;
+    }
+
+    .tutorial-content ul {
+        margin-left: 15px;
+    }
+}
     </style>
 </head>
 <body>
@@ -694,34 +1035,36 @@ function rebuildSectionItems(sectionData) {
 }
 
 function createPrebuiltSections() {
-    const prebuilt = [
-        { id: 'section-1', type: 'elements', title: 'Unit Status', x: 20, y: 20, width: 350, height: 280, items: [
-            { id: 'item-1', name: 'Total Beds', isCensus: true, rank: 1 },
-            { id: 'item-2', name: 'Occupied Beds', isCensus: false, rank: 2 },
-            { id: 'item-3', name: 'Available Beds', isCensus: false, rank: 3 },
-            { id: 'item-4', name: 'Pending Admissions', isCensus: false, rank: 4 }
-        ]},
-        { id: 'section-2', type: 'staff', title: 'Staff On Duty', x: 390, y: 20, width: 420, height: 250, items: [
-            { id: 'item-5', position: 'Charge Nurse', hasAssignment: true, shift: 'Day' },
-            { id: 'item-6', position: 'RN - Zone A', hasAssignment: true, shift: 'Day' },
-            { id: 'item-7', position: 'RN - Zone B', hasAssignment: true, shift: 'Day' }
-        ]},
-        { id: 'section-3', type: 'oncall', title: 'On-Call Directory', x: 830, y: 20, width: 350, height: 180, items: [
-            { id: 'item-8', position: 'Supervisor', isVisible: true },
-            { id: 'item-9', position: 'House MD', isVisible: true }
-        ]},
-        { id: 'section-4', type: 'communication', title: 'Shift Notes', x: 20, y: 320, width: 400, height: 200, status: 'green', items: [] },
-        { id: 'section-5', type: 'census', title: 'Total Census', x: 830, y: 220, width: 200, height: 150, censusSource: 'all', censusLabel: 'Current Census', items: [] },
-        { id: 'section-6', type: 'rrt', title: 'Rapid Response Team', x: 440, y: 290, width: 370, height: 200, items: [] }
-    ];
+const prebuilt = [
+    { id: 'section-1', type: 'elements', title: 'Unit Status', x: 20, y: 20, width: 260, height: 230, items: [
+        { id: 'item-1', name: 'Total Beds', isCensus: true, rank: 1 },
+        { id: 'item-2', name: 'Occupied Beds', isCensus: false, rank: 2 },
+        { id: 'item-3', name: 'Available Beds', isCensus: false, rank: 3 },
+        { id: 'item-4', name: 'Pending Admissions', isCensus: false, rank: 4 }
+    ]},
+    { id: 'section-2', type: 'staff', title: 'Staff On Duty', x: 300, y: 20, width: 420, height: 230, items: [
+        { id: 'item-5', position: 'Charge Nurse', hasAssignment: true, shift: 'Day' },
+        { id: 'item-6', position: 'RN - Zone A', hasAssignment: true, shift: 'Day' },
+        { id: 'item-7', position: 'RN - Zone B', hasAssignment: true, shift: 'Day' }
+    ]},
+    { id: 'section-3', type: 'oncall', title: 'On-Call Directory', x: 740, y: 20, width: 330, height: 230, items: [
+        { id: 'item-8', position: 'Supervisor', isVisible: true },
+        { id: 'item-9', position: 'House MD', isVisible: true }
+    ]},
+    { id: 'section-4', type: 'communication', title: 'Shift Notes', x: 20, y: 270, width: 340, height: 230, status: 'green', items: [] },
+    { id: 'section-5', type: 'census', title: 'Total Census', x: 380, y: 270, width: 200, height: 180, censusSource: 'all', censusLabel: 'Current Census', items: [] },
+    { id: 'section-6', type: 'rrt', title: 'Rapid Response Team', x: 600, y: 270, width: 470, height: 230, items: [] }
+];
     sectionIdCounter = 6;
     prebuilt.forEach(s => { sections.push(s); renderSection(s); rebuildSectionItems(s); });
-    displayPages.push({ id: 'page-1', name: 'Main Dashboard', sections: [
-        { sectionId: 'section-1', x: 20, y: 20, width: 300, height: 250 },
-        { sectionId: 'section-2', x: 340, y: 20, width: 350, height: 250 },
-        { sectionId: 'section-5', x: 710, y: 20, width: 180, height: 140 },
-        { sectionId: 'section-4', x: 20, y: 290, width: 400, height: 180 }
-    ], scale: 1 });
+displayPages.push({ id: 'page-1', name: 'Main Dashboard', sections: [
+    { sectionId: 'section-1', x: 20, y: 20, width: 280, height: 250 },
+    { sectionId: 'section-2', x: 320, y: 20, width: 420, height: 250 },
+    { sectionId: 'section-3', x: 760, y: 20, width: 320, height: 250 },
+    { sectionId: 'section-4', x: 20, y: 290, width: 340, height: 250 },
+    { sectionId: 'section-5', x: 380, y: 290, width: 200, height: 200 },
+    { sectionId: 'section-6', x: 600, y: 290, width: 480, height: 250 }
+], scale: 1 });
     displayPageIdCounter = 1;
     phoneNumbers = { 'sarah johnson': '509-555-0101', 'dr. patel': '509-555-0103' };
     renderDisplayPageButtons();
