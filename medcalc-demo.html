@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dose Calculator - DEMO</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Dose Calculator">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <style>
+*, *::before, *::after { box-sizing: border-box; }
+td { overflow-wrap: anywhere; word-break: break-word; }
+html, body { overflow-x: hidden; }
+
+:root {
+  --font: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --pad: 12px;
+}
+
+body {
+  font-family: var(--font);
+  font-size: clamp(14px, 1.6vw, 16px);
+  line-height: 1.35;
+  margin: 24px;
+  background-color: #fffaf3;
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
+}
+
+.h1-subtitle {
+  font-weight: normal;
+  font-size: 0.4em;
+  margin-left: 6px;
+}
+
+.demo-badge {
+  display: inline-block;
+  background: #e53935;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7em;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--pad);
+}
+
+.controls {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  margin-bottom: 16px;
+}
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  gap: 4px;
+}
+
+.controls input {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #cccccc;
+  background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) inset, 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 120ms ease-out, background 120ms ease-out;
+}
+
+.controls input:hover {
+  background: linear-gradient(to bottom, #ffffff, #fcfcfc);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) inset, 0 2px 3px rgba(0, 0, 0, 0.10);
+}
+
+.controls input:focus-visible {
+  outline: 2px solid #2673e0;
+  outline-offset: 2px;
+}
+
+.controls select {
+  padding: 8px;
+  padding-right: 28px;
+  border-radius: 8px;
+  border: 1px solid #cccccc;
+  background: linear-gradient(45deg, transparent 50%, #555 50%), linear-gradient(135deg, #555 50%, transparent 50%), linear-gradient(to bottom, #ffffff, #f3f3f3);
+  background-position: calc(100% - 14px) 50%, calc(100% - 10px) 50%, 0 0;
+  background-size: 6px 6px, 6px 6px, 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+  appearance: none;
+  cursor: pointer;
+  transition: box-shadow 120ms ease-out, background 120ms ease-out;
+}
+
+.controls select:hover {
+  background: linear-gradient(to bottom, #ffffff, #f7f7f7);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+}
+
+.qf-btn {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+  background: linear-gradient(to bottom, #222222, #000000);
+  border-radius: 6px;
+  border: 1px solid #000000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+  cursor: pointer;
+  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+}
+
+.qf-btn:hover {
+  background: linear-gradient(to bottom, #2c2c2c, #050505);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.16) inset;
+  transform: translateY(-1px);
+}
+
+.qf-input {
+  width: 90%;
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #dddddd;
+  box-sizing: border-box;
+  background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+}
+
+.ibw-method-label {
+  display: inline;
+  margin-left: 4px;
+  color: #7b2cbf;
+  font-style: italic;
+  font-size: 0.5rem;
+}
+
+.weight-warning {
+  display: none;
+  margin-left: 4px;
+  color: #cc0000;
+  font-weight: 700;
+  font-size: 0.55rem;
+}
+
+.weight-warning.visible {
+  display: inline;
+}
+
+.ibw-method-label.tbw-mode {
+  color: #8b4513;
+}
+
+body.ibw-active .calc,
+body.ibw-active .sub {
+  color: purple;
+}
+
+body.tbw-active .calc,
+body.tbw-active .sub {
+  color: #8b4513;
+}
+
+.purple-text {
+  color: #7b2cbf !important;
+  font-weight: 800;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+thead th {
+  text-align: left;
+  font-size: 0.9rem;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+  padding: 8px;
+  background: #fafafa;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+tbody td {
+  border-bottom: 1px solid #eee;
+  padding: 10px 8px;
+  vertical-align: top;
+  word-wrap: break-word;
+}
+
+.drug { font-weight: 700; }
+.calc { font-weight: 800; font-size: 1.05rem; }
+.sub {
+  display: block;
+  font-size: 0.85rem;
+  color: #444;
+  margin-top: 2px;
+}
+
+.route { white-space: nowrap; }
+
+.note {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 10px;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  font-size: .8rem;
+  color: #333;
+  background: #fafafa;
+}
+
+.section-row td {
+  background: #000;
+  color: #fff;
+  font-weight: 800;
+  padding: 10px 8px;
+}
+
+.subsection-row td {
+  background: #f3f3f3;
+  color: #333;
+  font-weight: 600;
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #e2e2e2;
+}
+
+.flag {
+  font-size: .8rem;
+  color: #0a5;
+  font-weight: 700;
+  display: inline-block;
+  margin-left: 6px;
+}
+
+.note-icon {
+  margin-left: 6px;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 2px 6px;
+}
+
+.note-row td {
+  background: #fffbe6;
+  color: #5c4b00;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+tbody tr:not(.section-row):not(.subsection-row):not(.note-row) {
+  background-color: #fffbf4;
+}
+
+tbody tr:nth-child(even):not(.section-row):not(.subsection-row):not(.note-row) {
+  background-color: #fff7ed;
+}
+
+tr[id] { scroll-margin-top: 56px; }
+
+.drug-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.drug-name {
+  font-weight: 700;
+}
+
+.given-btn {
+  padding: 3px 6px;
+  font-size: 12px;
+  background: #2673e0;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: fit-content;
+}
+
+#clearBtn {
+  position: fixed;
+  top: 20px;
+  left: 25px;
+  z-index: 11000;
+  padding: 6px 14px;
+  font-size: 11px;
+  border-radius: 999px;
+  border: 1px solid #d0d0d0;
+  background: linear-gradient(to bottom, #ffffff, #f1f1f1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  cursor: pointer;
+  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+}
+
+#clearBtn:hover {
+  background: linear-gradient(to bottom, #ffffff, #f7f7f7);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+  transform: translateY(-1px);
+}
+
+body { padding-top: 44px; }
+
+#sectionOverlay {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  z-index: 10000;
+  padding: 12px;
+  overflow-y: auto;
+  height: 100dvh;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.section-overlay-back {
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+#sectionJump {
+  font-weight: 400;
+}
+
+#sectionJump option {
+  font-weight: 700;
+}
+
+#sectionJump option[value=""] {
+  font-weight: 400;
+  color: #777;
+}
+
+body.overlay-open {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+  touch-action: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea, button {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  thead { display: none; }
+  table, tbody, tr, td { display: block; width: 100%; }
+
+  tr {
+    background: #fffbf4;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+
+  td {
+    display: grid;
+    grid-template-columns: 35% 65%;
+    align-items: start;
+    gap: 4px;
+    padding: 5px 10px;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    opacity: 0.6;
+    font-size: 0.75rem;
+  }
+
+  td .calc {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  tr.section-row {
+    display: block;
+    background: #000;
+    color: #fff;
+  }
+
+  tr.section-row td {
+    display: block;
+    padding: 10px;
+    grid-template-columns: 1fr;
+  }
+
+  tr.subsection-row {
+    display: block;
+    background: #f3f3f3;
+    margin: 4px 0 2px;
+    border-radius: 6px;
+    box-shadow: none;
+  }
+
+  tr.subsection-row td {
+    display: block;
+    padding: 6px 10px;
+    grid-template-columns: 1fr;
+  }
+
+  tr.subsection-row td::before {
+    content: "";
+  }
+
+  .note-row td {
+    grid-template-columns: 1fr;
+    background: #fffbe6;
+  }
+
+  td { min-width: 0; overflow-wrap: anywhere; }
+  td > * { min-width: 0; }
+  
+  #clearBtn {
+    position: static;
+    display: inline-block;
+    margin: 4px 6px 8px 0;
+  }
+  
+  body {
+    padding-top: 0;
+  }
+}
+
+/* Log overlay */
+#logOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 11000;
+  display: none;
+}
+
+.log-panel {
+  background: #fff;
+  max-width: 480px;
+  margin: 60px auto;
+  padding: 16px 14px 18px;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  font-size: 0.85rem;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.log-back {
+  margin-bottom: 8px;
+  padding: 4px 9px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.log-disclaimer {
+  font-size: 0.75rem;
+  color: #666;
+  margin: 0 0 8px;
+}
+
+.log-entry {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-dose {
+  font-weight: 600;
+  color: #333;
+}
+
+.log-time {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+#topButtonRow {
+  position: fixed;
+  top: 9px;
+  right: 12px;
+  z-index: 12000;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+#doseLogButton {
+  font-size: 0.8rem;
+  color: #444;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+#doseLogButton:hover {
+  background: #f0f0f0;
+}
+
+@media (max-width: 640px) {
+  #topButtonRow {
+    position: static;
+    margin-bottom: 10px;
+  }
+}
+  </style>
+</head>
+
+<body>
+
+<h1>
+  NAE Calculator
+  <span class="demo-badge">DEMO</span>
+  <span class="h1-subtitle">#reference tool only. Intended for use by qualified healthcare professionals#</span>
+</h1>
+
+<button id="clearBtn" type="button">Clear</button>
+
+<div class="controls">
+  <button id="quickFindBtn" class="qf-btn" type="button">Quick Find</button>
+  <input id="quickFindInput" class="qf-input" type="text" placeholder="Type a drug…" style="display:none" />
+
+  <label>Jump to section
+    <select id="sectionJump">
+      <option value="">Select…</option>
+    </select>
+  </label>
+
+  <label>
+    <span>
+      Patient Weight (kg)
+      <span id="ibwMethodLabel" class="ibw-method-label"></span>
+      <span id="weightWarning" class="weight-warning"></span>
+    </span>
+    <input id="weightKg" type="number" step="0.01" min="0" placeholder="e.g., 18.5" />
+  </label>
+
+  <label>Patient Weight (lb)
+    <input id="weightLb" type="number" step="0.1" min="0" placeholder="e.g., 40" />
+  </label>
+
+  <label>Height
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <input id="heightIn" type="number" step="0.1" min="0" placeholder="in" style="width: 50%;" />
+      <input id="heightCm" type="number" step="0.1" min="0" placeholder="cm" style="width: 50%;" />
+    </div>
+  </label>
+
+  <label>Sex
+    <select id="sexSel">
+      <option value="">Select…</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+    </select>
+  </label>
+
+  <label>Age
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <input id="ageYears" type="number" step="0.0001" min="0" placeholder="Years" style="width: 50%; min-width: 60px;" />
+      <select id="ageMonths" style="width: 50%; min-width: 70px;">
+        <option value="">Months</option>
+        <option value="0">&lt;1 month</option>
+        <option value="1">1 month</option>
+        <option value="2">2 months</option>
+        <option value="3">3 months</option>
+        <option value="4">4 months</option>
+        <option value="5">5 months</option>
+        <option value="6">6 months</option>
+        <option value="7">7 months</option>
+        <option value="8">8 months</option>
+        <option value="9">9 months</option>
+        <option value="10">10 months</option>
+        <option value="11">11 months</option>
+      </select>
+    </div>
+    <input id="ageDays" type="number" step="1" min="0" max="30" placeholder="Days" style="display: none; width: 100%; margin-top: 4px;" />
+  </label>
+
+  <label>
+    <span style="display:flex; align-items:center; gap:4px;">
+      Habitus CDC Percentile (1–7)
+      <button type="button" id="habitusInfoBtn" class="note-icon" aria-label="Habitus scale reference">i</button>
+    </span>
+    <select id="habitusScore">
+      <option value="">Select…</option>
+      <option value="1">1 – 10th Percentile</option>
+      <option value="2">2 – 25th Percentile</option>
+      <option value="3">3 – IBW 50th Percentile</option>
+      <option value="4">4 – 75th Percentile</option>
+      <option value="5">5 – 90th Percentile</option>
+      <option value="6">6 – 95th Percentile</option>
+      <option value="7">7 – 97th Percentile</option>
+    </select>
+  </label>
+</div>
+
+<div id="sectionOverlay" style="display:none;">
+  <button id="sectionOverlayBack" class="section-overlay-back">Back</button>
+  <div id="sectionOverlayContent"></div>
+</div>
+
+<table id="doseTable" aria-describedby="disclaimer">
+  <thead>
+    <tr>
+      <th style="width:28%">Drug</th>
+      <th style="width:18%">Concentration</th>
+      <th style="width:22%">Dosing</th>
+      <th style="width:12%">Route</th>
+      <th style="width:20%">Calculated Dose</th>
+    </tr>
+  </thead>
+  <tbody id="drugRows"></tbody>
+</table>
+
+<p id="disclaimer" class="note">DEMO VERSION - Template only. Verify all doses against current protocols.</p>
+
+<!-- Top button row -->
+<div id="topButtonRow">
+  <div id="doseLogButton" role="button" tabindex="0">Log</div>
+</div>
+
+<!-- Log overlay -->
+<div id="logOverlay" style="display:none;">
+  <div class="log-panel">
+    <button id="logOverlayBack" class="log-back">Back</button>
+    <h2>Dose Log</h2>
+    <div id="logOverlayContent"></div>
+  </div>
+</div>
+
+<!-- Habitus overlay -->
+<div id="habitusOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:11000;">
+  <div style="background:#fff; max-width:480px; margin:60px auto; padding:16px; border-radius:10px;">
+    <button id="habitusBack" style="margin-bottom:8px; padding:4px 9px; cursor:pointer;">Back</button>
+    <h2>7-Point Habitus Scale</h2>
+    <p style="font-size:0.8rem; color:#555;">Use visual assessment to choose habitus score 1-7 based on CDC percentiles.</p>
+    <p style="font-size:0.75rem; color:#666;">1=10th%, 2=25th%, 3=50th%(IBW), 4=75th%, 5=90th%, 6=95th%, 7=97th%</p>
+  </div>
+</div>
+
+<script>
+// ==================== DEMO VERSION - NO AZURE CONNECTION ====================
+
+const $ = (sel) => document.querySelector(sel);
+const tbody = $("#drugRows");
+const COL_LABELS = ["Drug", "Concentration", "Dosing", "Route", "Calculated Dose"];
+
+// Dose log (browser memory only)
+window._doseLog = [];
+
+// State
+const state = {
+  weightKg: 0,
+  heightCm: 0,
+  ageYears: 0,
+  sex: "",
+  ibwMode: null,
+  userWeightOverride: false,
+  ibwAutoFilled: false,
+  ibwMethod: "",
+  habitusScore: null,
+  tbwEstimateKg: 0,
+  tbwFactor: null,
+  roundMlTo: 0.01,
+  rows: [],
+  bmiTargetPeds: 17.5,
+  bmiTargetAdult: 22,
+  quickFilter: "",
+  controlValues: {},
+};
+
+// ==================== UTILITY FUNCTIONS ====================
+
+function fmtTrim(value, maxDecimals = 3) {
+  if (!Number.isFinite(value)) return "—";
+  let s = Number(value).toFixed(maxDecimals);
+  s = s.replace(/(\.\d*[1-9])0+$/,"$1").replace(/\.0+$/,"");
+  return s;
+}
+
+function roundToStep(value, step) { 
+  if (!step || step <= 0) return value; 
+  return Math.round(value / step) * step; 
+}
+
+function fmt(value, decimals = 2) { 
+  return (Number.isFinite(value) ? value : 0).toFixed(decimals); 
+}
+
+function amountUnit(drug) {
+  const d = drug?.dosing || {};
+  if (d.type === "mcg_per_kg" || d.type === "mcg_per_min" || d.type === "mcg_per_kg_min") {
+    return "mcg";
+  }
+  if (d.type === "units_per_kg" || d.type === "units_per_kg_hr") {
+    return "units";
+  }
+  return drug?.units?.amount || "mg";
+}
+
+function getConcentrationInDoseUnits(drug) {
+  const concValue = Number(drug.concentrationMgPerMl) || 0;
+  if (concValue <= 0) return 0;
+  const concUnit = drug?.units?.concentration || "mg/mL";
+  const doseUnit = amountUnit(drug);
+  let concInMcgPerMl = concValue;
+  if (concUnit === "mg/mL") {
+    concInMcgPerMl = concValue * 1000;
+  } else if (concUnit === "mcg/mL") {
+    concInMcgPerMl = concValue;
+  } else if (concUnit === "units/mL") {
+    return concValue;
+  }
+  if (doseUnit === "mcg") {
+    return concInMcgPerMl;
+  } else if (doseUnit === "mg") {
+    return concInMcgPerMl / 1000;
+  } else {
+    return concValue;
+  }
+}
+
+function concUnit(drug) { 
+  return drug?.units?.concentration || "mg/mL"; 
+}
+
+function setKgDisplayPurple(isPurple) {
+  const kgInput = document.getElementById("weightKg");
+  if (!kgInput) return;
+  if (isPurple) kgInput.classList.add("purple-text");
+  else kgInput.classList.remove("purple-text");
+}
+
+function getSortedRows() {
+  if (!Array.isArray(state.rows)) return [];
+  return [...state.rows].sort((a, b) => {
+    const ar = Number.isFinite(a.rank) ? a.rank : Infinity;
+    const br = Number.isFinite(b.rank) ? b.rank : Infinity;
+    return ar - br;
+  });
+}
+
+// ==================== IBW CALCULATIONS ====================
+
+const CDC_BMI50 = {
+  male: [16.5, 16.0, 15.7, 15.5, 15.4, 15.5, 15.7, 16.0, 16.4, 16.9, 17.4, 18.0, 18.6, 19.2, 19.8, 20.4, 21.0, 21.6, 22.2],
+  female: [16.4, 15.9, 15.6, 15.4, 15.3, 15.4, 15.6, 15.9, 16.3, 16.8, 17.3, 17.9, 18.5, 19.1, 19.7, 20.3, 20.8, 21.3, 21.7]
+};
+
+function getCdcBmi50(ageYears, sex) {
+  const s = (sex || "").toLowerCase();
+  const arr = CDC_BMI50[s] || null;
+  if (!arr) return null;
+  const age = Number(ageYears) || 0;
+  if (age < 2 || age > 20) return null;
+  const x = age - 2;
+  const i0 = Math.floor(x);
+  const i1 = Math.min(i0 + 1, arr.length - 1);
+  const t = x - i0;
+  const v0 = arr[i0];
+  const v1 = arr[i1];
+  return v0 + (v1 - v0) * t;
+}
+
+function calcCdcPedsIBW(heightCm, ageYears, sex) {
+  const hM = (Number(heightCm) || 0) / 100;
+  if (hM <= 0) return 0;
+  const bmi50 = getCdcBmi50(ageYears, sex);
+  if (!bmi50) return 0;
+  return bmi50 * hM * hM;
+}
+
+const WHO_WFL50 = {
+  male: [[50, 3.3], [55, 4.4], [60, 5.6], [65, 6.9], [70, 8.3], [75, 9.7], [80, 11.1], [85, 12.5], [90, 13.8], [95, 15.1], [100, 16.4], [105, 17.7], [110, 19.0]],
+  female: [[50, 3.2], [55, 4.2], [60, 5.3], [65, 6.5], [70, 7.9], [75, 9.2], [80, 10.5], [85, 11.8], [90, 13.1], [95, 14.4], [100, 15.7], [105, 17.0], [110, 18.3]]
+};
+
+function interpTable(table, x) {
+  if (!table || !table.length) return 0;
+  if (x <= table[0][0]) return table[0][1];
+  if (x >= table[table.length - 1][0]) return table[table.length - 1][1];
+  for (let i = 0; i < table.length - 1; i++) {
+    const [x0, y0] = table[i];
+    const [x1, y1] = table[i + 1];
+    if (x >= x0 && x <= x1) {
+      const t = (x - x0) / (x1 - x0);
+      return y0 + (y1 - y0) * t;
+    }
+  }
+  return 0;
+}
+
+function calcWhoInfantIBW(heightCm, sex) {
+  const h = Number(heightCm) || 0;
+  if (h <= 0 || h < 50) return 0;
+  const s = (sex || "").toLowerCase();
+  const maleTbl = WHO_WFL50.male;
+  const femTbl = WHO_WFL50.female;
+  if (s === "male") return interpTable(maleTbl, h);
+  if (s === "female") return interpTable(femTbl, h);
+  const m = interpTable(maleTbl, h);
+  const f = interpTable(femTbl, h);
+  return (m && f) ? (m + f) / 2 : (m || f || 0);
+}
+
+function calcAgeOnlyPedsIBW(ageYears) {
+  const age = Number(ageYears) || 0;
+  if (age < 1 || age > 14) return 0;
+  let wt = (3 * age) + 7;
+  if (wt < 3) wt = 3;
+  if (wt > 70) wt = 70;
+  return wt;
+}
+
+function calcTraubPedsIBW(heightCm) {
+  const h = Number(heightCm) || 0;
+  if (h <= 0) return 0;
+  const inches = h / 2.54;
+  if (inches < 30 || inches > 60) return 0;
+  return 2.396 * Math.exp(0.01863 * h);
+}
+
+function calcDevineAdultIBW(heightIn, sex) {
+  const hin = Number(heightIn) || 0;
+  if (hin <= 0) return 0;
+  const inchesOver5ft = Math.max(0, hin - 60);
+  const s = (sex || "").toLowerCase();
+  const base = s === "male" ? 50 : s === "female" ? 45.5 : 47.75;
+  return base + 2.3 * inchesOver5ft;
+}
+
+function computeIbwFromInputs() {
+  const heightCm = Number(state.heightCm) || 0;
+  const heightIn = heightCm > 0 ? (heightCm / 2.54) : 0;
+  const age = Number(state.ageYears) || 0;
+  const hasAge = age > 0;
+  const hasSex = !!state.sex;
+  const hasHeight = heightCm > 0;
+
+  state.ibwMethod = "";
+
+  const isAdultContext = (hasAge && age >= 18) || (!hasAge && hasHeight && heightIn > 60);
+
+  if (isAdultContext) {
+    if (!hasHeight) return 0;
+    if (heightIn > 0 && heightIn < 60) return 0;
+    const dev = calcDevineAdultIBW(heightIn, state.sex);
+    if (dev > 0) {
+      state.ibwMethod = "Devine adult IBW";
+      return dev;
+    }
+    return 0;
+  }
+
+  if (!hasHeight && hasAge) {
+    const ageOnly = calcAgeOnlyPedsIBW(age);
+    if (ageOnly > 0) {
+      state.ibwMethod = "Luscombe age-only weight";
+      return ageOnly;
+    }
+    return 0;
+  }
+
+  if (!hasHeight) return 0;
+  if (heightIn > 0 && heightIn < 19.5) return 0;
+
+  if (!hasAge && heightIn > 0 && heightIn < 30) {
+    const whoIbw = calcWhoInfantIBW(heightCm, state.sex);
+    if (whoIbw > 0) {
+      state.ibwMethod = "WHO WFL-50 (length)";
+      return whoIbw;
+    }
+    return 0;
+  }
+
+  if (!hasAge && heightIn > 60) {
+    const dev = calcDevineAdultIBW(heightIn, state.sex);
+    if (dev > 0) {
+      state.ibwMethod = "Devine adult IBW";
+      return dev;
+    }
+    return 0;
+  }
+
+  if (hasAge && age < 2) {
+    const whoIbw = calcWhoInfantIBW(heightCm, state.sex);
+    if (whoIbw > 0) {
+      state.ibwMethod = "WHO WFL-50 (length)";
+      return whoIbw;
+    }
+    const traub = calcTraubPedsIBW(heightCm);
+    if (traub > 0) {
+      state.ibwMethod = "Traub height-only";
+      return traub;
+    }
+    return 0;
+  }
+
+  if (hasAge && age >= 2) {
+    if (hasSex) {
+      const cdcIbw = calcCdcPedsIBW(heightCm, age, state.sex);
+      if (cdcIbw > 0) {
+        state.ibwMethod = "CDC BMI-50 (ht/age/sex)";
+        return cdcIbw;
+      }
+    } else {
+      const bmiM = getCdcBmi50(age, "male");
+      const bmiF = getCdcBmi50(age, "female");
+      const bmiAvg = (bmiM && bmiF) ? (bmiM + bmiF) / 2 : (bmiM || bmiF || null);
+      if (bmiAvg) {
+        const hM = heightCm / 100;
+        const cdcAvgIbw = bmiAvg * hM * hM;
+        if (cdcAvgIbw > 0) {
+          state.ibwMethod = "CDC BMI-50 (sex-mean)";
+          return cdcAvgIbw;
+        }
+      }
+    }
+  }
+
+  const traubIbw = calcTraubPedsIBW(heightCm);
+  if (traubIbw > 0) {
+    state.ibwMethod = "Traub height-only";
+    return traubIbw;
+  }
+  return 0;
+}
+
+function dosingWeightKg(drug) {
+  return state.weightKg;
+}
+
+function calcDoseMg(drug, weightKg, ageYears) {
+  const d = drug.dosing || {};
+
+  if (drug.tieredDose) {
+    const w = Number(weightKg) || 0;
+    let amt = w < (drug.tieredDose.thresholdKg ?? 20)
+      ? (drug.tieredDose.ltDoseMg ?? 0.5)
+      : (drug.tieredDose.geDoseMg ?? 1);
+    if (Number.isFinite(drug.maxMg)) amt = Math.min(amt, drug.maxMg);
+    return amt;
+  }
+
+  let amt = null;
+  const wt = dosingWeightKg(drug);
+  if (d.type === "mg_per_kg") {
+    amt = (wt || 0) * (d.value || 0);
+  } else if (d.type === "mcg_per_kg") {
+    amt = (wt || 0) * (d.value || 0);
+  } else if (d.type === "units_per_kg") {
+    amt = (wt || 0) * (d.value || 0);
+  } else if (d.type === "mg_fixed") {
+    amt = (d.value || 0);
+  }
+  if (amt == null) return null;
+
+  if (Number.isFinite(drug.maxMg)) {
+    amt = Math.min(amt, drug.maxMg);
+  }
+
+  return amt;
+}
+
+// ==================== EQUIPMENT ESTIMATORS ====================
+
+function estimateUncuffedETT(ageYears, weightKg, heightCm) {
+  const hasAge = Number.isFinite(ageYears) && ageYears > 0;
+  const hasWeight = Number.isFinite(weightKg) && weightKg > 0;
+  const hasHeight = Number.isFinite(heightCm) && heightCm > 0;
+
+  if (hasAge && ageYears < 18) {
+    if (ageYears < 1) {
+      if (hasWeight) {
+        if (weightKg < 1) return 2.5;
+        if (weightKg < 2) return 3.0;
+        if (weightKg < 3) return 3.5;
+        if (weightKg < 4) return 3.5;
+        return 4.0;
+      }
+      return 3.5;
+    }
+    const raw = (ageYears / 4) + 4;
+    const rounded = Math.round(raw * 2) / 2;
+    return Math.max(3.0, Math.min(6.5, rounded));
+  }
+
+  if (hasAge && ageYears >= 18) {
+    if (hasHeight) {
+      if (heightCm < 160) return 7.0;
+      if (heightCm <= 180) return 7.5;
+      return 8.0;
+    }
+    return 7.5;
+  }
+
+  if (!hasAge && hasWeight && weightKg <= 70) {
+    if (weightKg < 1) return 2.5;
+    if (weightKg < 3) return 3.0;
+    if (weightKg < 5) return 3.5;
+    if (weightKg < 10) return 4.0;
+    if (weightKg < 20) return 4.5;
+    if (weightKg < 30) return 5.0;
+    if (weightKg < 40) return 5.5;
+    if (weightKg < 50) return 6.0;
+    return 6.5;
+  }
+
+  if (!hasAge && hasWeight && weightKg > 70) {
+    return 7.5;
+  }
+
+  return null;
+}
+
+function estimateCuffedETT(ageYears, weightKg, heightCm) {
+  const hasAge = Number.isFinite(ageYears) && ageYears > 0;
+  const hasHeight = Number.isFinite(heightCm) && heightCm > 0;
+  const hasWeight = Number.isFinite(weightKg) && weightKg > 0;
+
+  if (hasAge && ageYears < 18) {
+    if (ageYears < 1) {
+      if (hasWeight) {
+        if (weightKg < 1) return 2.5;
+        if (weightKg < 2) return 2.5;
+        if (weightKg < 3) return 3.0;
+        if (weightKg < 4) return 3.0;
+        return 3.5;
+      }
+      return 3.0;
+    }
+    const raw = (ageYears / 4) + 3.5;
+    const rounded = Math.round(raw * 2) / 2;
+    return Math.max(3.0, Math.min(6.0, rounded));
+  }
+
+  if (hasAge && ageYears >= 18) {
+    if (hasHeight) {
+      if (heightCm < 160) return 6.5;
+      if (heightCm <= 180) return 7.0;
+      return 7.5;
+    }
+    return 7.0;
+  }
+
+  if (!hasAge && hasWeight && weightKg <= 70) {
+    if (weightKg < 1) return 2.5;
+    if (weightKg < 3) return 3.0;
+    if (weightKg < 5) return 3.5;
+    if (weightKg < 10) return 4.0;
+    if (weightKg < 20) return 4.0;
+    if (weightKg < 30) return 4.5;
+    if (weightKg < 40) return 5.0;
+    if (weightKg < 50) return 5.5;
+    return 6.0;
+  }
+
+  if (!hasAge && hasWeight && weightKg > 70) {
+    return 7.0;
+  }
+
+  return null;
+}
+
+function estimateEttDepthFromSize(sizeMm, ageYears, sex) {
+  const size = Number(sizeMm);
+  if (!Number.isFinite(size) || size <= 0) return null;
+  const age = Number(ageYears) || 0;
+  const hasAge = age > 0;
+  const s = (sex || "").toLowerCase();
+  if ((hasAge && age < 18) || size <= 6.5) {
+    const depth = size * 3;
+    return Math.round(depth * 10) / 10;
+  }
+  if (s === "male") return 23;
+  if (s === "female") return 21;
+  return 22;
+}
+
+function estimateUncuffedETTDepth(ageYears, weightKg, heightCm, sex) {
+  const size = estimateUncuffedETT(ageYears, weightKg, heightCm);
+  return estimateEttDepthFromSize(size, ageYears, sex);
+}
+
+function estimateCuffedETTDepth(ageYears, weightKg, heightCm, sex) {
+  const size = estimateCuffedETT(ageYears, weightKg, heightCm);
+  return estimateEttDepthFromSize(size, ageYears, sex);
+}
+
+function estimateVitalSigns(ageYears, weightKg) {
+  const age = Number(ageYears) || 0;
+  const wt = Number(weightKg) || 0;
+  const hasAge = age > 0;
+  const hasWt = wt > 0;
+
+  let ageCategory = null;
+
+  if (hasAge) {
+    if (age < 0.083) ageCategory = "neonate";
+    else if (age < 1) ageCategory = "infant";
+    else if (age < 3) ageCategory = "toddler";
+    else if (age < 6) ageCategory = "preschool";
+    else if (age < 12) ageCategory = "school";
+    else if (age < 18) ageCategory = "adolescent";
+    else ageCategory = "adult";
+  } else if (!hasAge && hasWt) {
+    if (wt < 3.5) ageCategory = "neonate";
+    else if (wt < 10) ageCategory = "infant";
+    else if (wt < 15) ageCategory = "toddler";
+    else if (wt < 20) ageCategory = "preschool";
+    else if (wt < 40) ageCategory = "school";
+    else if (wt < 60) ageCategory = "adolescent";
+    else ageCategory = "adult";
+  }
+
+  if (!ageCategory) return null;
+
+  const ranges = {
+    neonate: { hr: "100–160", rr: "30–60", sbp: "60–90" },
+    infant: { hr: "100–150", rr: "25–40", sbp: "70–100" },
+    toddler: { hr: "90–140", rr: "20–30", sbp: "80–110" },
+    preschool: { hr: "80–120", rr: "18–25", sbp: "85–115" },
+    school: { hr: "70–110", rr: "15–20", sbp: "90–120" },
+    adolescent: { hr: "60–100", rr: "12–18", sbp: "100–130" },
+    adult: { hr: "60–100", rr: "12–20", sbp: "90–140" }
+  };
+
+  return ranges[ageCategory] || null;
+}
+
+function estimateBlade(ageYears, weightKg) {
+  const age = Number(ageYears) || 0;
+  const wt = Number(weightKg) || 0;
+  const hasAge = age > 0;
+  const hasWt = wt > 0;
+
+  if (hasAge) {
+    if (age < 0.1) return "Miller 0";
+    if (age < 1) return "Miller 1";
+    if (age < 3) return "Miller 2";
+    if (age < 8) return "Mac 2";
+    if (age < 18) return "Mac 3";
+    return "Mac 4";
+  }
+
+  if (!hasAge && hasWt) {
+    if (wt < 2.5) return "Miller 0";
+    if (wt < 10) return "Miller 1–2";
+    if (wt < 20) return "Miller 2 / Mac 2";
+    if (wt < 40) return "Mac 2–3";
+    if (wt < 70) return "Mac 3";
+    return "Mac 4";
+  }
+
+  return null;
+}
+
+function estimateIoNeedle(weightKg) {
+  const wt = Number(weightKg) || 0;
+  if (!(wt > 0)) return null;
+  if (wt < 3) return "15 mm (pink)";
+  if (wt < 40) return "25 mm (blue)";
+  return "45 mm (yellow)";
+}
+
+function estimateBvm(ageYears, weightKg) {
+  const age = Number(ageYears) || 0;
+  const wt = Number(weightKg) || 0;
+  const hasAge = age > 0;
+  const hasWt = wt > 0;
+
+  if (hasAge) {
+    if (age < 1) return "Infant";
+    if (age < 8) return "Child";
+    if (age < 18) return "Small Adult";
+    return "Adult";
+  }
+
+  if (!hasAge && hasWt) {
+    if (wt < 10) return "Infant";
+    if (wt < 30) return "Child";
+    if (wt < 70) return "Small Adult";
+    return "Adult";
+  }
+
+  return null;
+}
+
+// ==================== TOGGLE NOTE ====================
+
+function toggleNote(id) {
+  const row = document.getElementById(`note-${id}`);
+  if (!row) return;
+  row.style.display = (row.style.display === "table-row") ? "none" : "table-row";
+}
+
+// ==================== RENDER ====================
+
+function render() {
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  let drugStripeIndex = 0;
+
+  const kgInput = document.getElementById("weightKg");
+  const methodSpan = document.getElementById("ibwMethodLabel");
+
+  if (!state.userWeightOverride) {
+    const ibw = computeIbwFromInputs();
+    const hasValidIbw = ibw > 0;
+
+    state.tbwEstimateKg = 0;
+    state.tbwFactor = null;
+
+    if (hasValidIbw) {
+      state.weightKg = ibw;
+      if (kgInput) kgInput.value = ibw.toFixed(2);
+      state.ibwAutoFilled = true;
+
+      if (methodSpan && state.ibwMethod) {
+        methodSpan.textContent = `(${state.ibwMethod})`;
+        methodSpan.classList.remove("tbw-mode");
+      }
+
+      setKgDisplayPurple(true);
+      document.body.classList.add("ibw-active");
+      document.body.classList.remove("tbw-active");
+
+      const weightWarning = document.getElementById("weightWarning");
+      if (weightWarning) {
+        weightWarning.textContent = "";
+        weightWarning.classList.remove("visible");
+      }
+    } else {
+      if (state.ibwAutoFilled) {
+        state.weightKg = 0;
+        if (kgInput) kgInput.value = "";
+        state.ibwAutoFilled = false;
+      }
+
+      if (methodSpan) {
+        methodSpan.textContent = "";
+        methodSpan.classList.remove("tbw-mode");
+      }
+
+      setKgDisplayPurple(false);
+      document.body.classList.remove("ibw-active");
+      document.body.classList.remove("tbw-active");
+
+      const weightWarning = document.getElementById("weightWarning");
+      if (weightWarning) {
+        const hasAnyInput = state.ageYears > 0 || state.heightCm > 0 || state.sex !== "";
+        const hasNoWeight = !state.weightKg || state.weightKg <= 0;
+        if (hasAnyInput && hasNoWeight) {
+          weightWarning.textContent = "Estimate not available, need weight";
+          weightWarning.classList.add("visible");
+        } else {
+          weightWarning.textContent = "";
+          weightWarning.classList.remove("visible");
+        }
+      }
+    }
+  } else {
+    if (methodSpan) {
+      methodSpan.textContent = "";
+      methodSpan.classList.remove("tbw-mode");
+    }
+    document.body.classList.remove("ibw-active");
+    document.body.classList.remove("tbw-active");
+  }
+
+  const filter = (state.quickFilter || "").toLowerCase();
+  const rows = getSortedRows();
+
+  rows.forEach(row => {
+    if (row.type === "section") {
+      if (filter) return;
+      const tr = document.createElement("tr");
+      tr.className = "section-row";
+      const td = document.createElement("td");
+      td.colSpan = 6;
+      td.textContent = row.label || "";
+      const slug = (row.label || "section").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      tr.id = `sec-${slug}`;
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      drugStripeIndex = 0;
+      return;
+    }
+
+    if (row.type === "subsection") {
+      if (filter) return;
+      const tr = document.createElement("tr");
+      tr.className = "subsection-row";
+      const td = document.createElement("td");
+      td.colSpan = 6;
+      td.textContent = row.label || "";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    const drug = row;
+    if (filter && !(drug.name || "").toLowerCase().includes(filter)) {
+      return;
+    }
+
+    const tr = document.createElement("tr");
+
+    // Drug cell
+    const tdDrug = document.createElement("td");
+    tdDrug.className = "drug";
+    tdDrug.setAttribute("data-label", COL_LABELS[0]);
+    const label = drug.name || "—";
+
+    tdDrug.innerHTML = `
+      <div class="drug-cell">
+        <span class="drug-name">${label}</span>
+        <button class="given-btn" type="button">Track</button>
+      </div>
+    `;
+
+    const givenBtn = tdDrug.querySelector(".given-btn");
+    if (givenBtn) {
+      givenBtn.addEventListener("click", () => {
+        let doseText = "";
+        const rowEl = givenBtn.closest("tr");
+        if (rowEl) {
+          const doseCell = rowEl.querySelector('td[data-label="Calculated Dose"]');
+          if (doseCell) {
+            const main = doseCell.querySelector(".calc");
+            const sub = doseCell.querySelector(".sub");
+            if (main && sub) {
+              doseText = `${main.textContent.trim()} — ${sub.textContent.trim()}`;
+            } else if (main) {
+              doseText = main.textContent.trim();
+            } else {
+              doseText = doseCell.innerText.trim();
+            }
+          }
+        }
+
+        window._doseLog.unshift({
+          timestamp: new Date().toLocaleString(),
+          drug: label,
+          drugName: label,
+          doseText: doseText
+        });
+
+        if (typeof renderLogOverlay === "function") {
+          renderLogOverlay();
+        }
+
+        const oldText = givenBtn.textContent;
+        givenBtn.textContent = "Logged";
+        givenBtn.disabled = true;
+        givenBtn.style.backgroundColor = "#0a5";
+
+        setTimeout(() => {
+          givenBtn.textContent = oldText;
+          givenBtn.disabled = false;
+          givenBtn.style.backgroundColor = "#2673e0";
+        }, 800);
+      });
+    }
+
+    tr.appendChild(tdDrug);
+
+    // Concentration
+    const tdConc = document.createElement("td");
+    tdConc.setAttribute("data-label", COL_LABELS[1]);
+    const conc = Number(drug.concentrationMgPerMl);
+    tdConc.innerHTML = (Number.isFinite(conc) && conc > 0)
+      ? `<span class="pill">${fmtTrim(conc, 3)} ${concUnit(drug)}</span>`
+      : `<span class="pill">—</span>`;
+    tr.appendChild(tdConc);
+
+    // Dosing
+    const tdDosing = document.createElement("td");
+    tdDosing.setAttribute("data-label", COL_LABELS[2]);
+    const d = drug.dosing || {};
+    let pedStr = d.type === "mg_per_kg" ? `${d.value} ${amountUnit(drug)}/kg`
+      : d.type === "mcg_per_kg" ? `${d.value} mcg/kg`
+      : d.type === "mg_fixed" ? `${d.value} ${amountUnit(drug)} (fixed)`
+      : d.type === "range_text" ? (d.value || "—")
+      : "—";
+    tdDosing.textContent = pedStr;
+
+    // Controls for special drugs
+    const controls = Array.isArray(drug.controls) ? drug.controls : (drug.control ? [drug.control] : []);
+    controls.forEach(ctrl => {
+      const key = ctrl.key || "ctrl";
+      const cid = `${(drug.name || "").replace(/\W+/g, "_")}_${key}`;
+      const wrap = document.createElement("div");
+      wrap.style.marginTop = "4px";
+      wrap.style.fontSize = "0.8rem";
+      const labelEl = document.createElement("label");
+      labelEl.textContent = ctrl.label ? `${ctrl.label}: ` : "Value: ";
+      const input = document.createElement("input");
+      input.type = "text";
+      input.inputMode = (ctrl.type === "number") ? "decimal" : "text";
+      input.style.width = "70px";
+      input.style.padding = "2px 4px";
+      input.style.fontSize = "0.8rem";
+      input.dataset.controlId = cid;
+      if (state.controlValues[cid] != null) {
+        input.value = state.controlValues[cid];
+      }
+      input.addEventListener("input", (e) => {
+        state.controlValues[cid] = e.target.value;
+        const scrollY = window.scrollY;
+        const caretPos = e.target.selectionStart;
+        render();
+        const newInput = document.querySelector(`input[data-control-id="${cid}"]`);
+        if (newInput) {
+          newInput.focus();
+          if (caretPos != null) {
+            try { newInput.setSelectionRange(caretPos, caretPos); } catch (err) {}
+          }
+        }
+        window.scrollTo(0, scrollY);
+      });
+      labelEl.appendChild(input);
+      wrap.appendChild(labelEl);
+      tdDosing.appendChild(wrap);
+    });
+
+    tr.appendChild(tdDosing);
+
+    // Route
+    const tdRoute = document.createElement("td");
+    tdRoute.className = "route";
+    tdRoute.setAttribute("data-label", COL_LABELS[3]);
+    tdRoute.textContent = drug.route || "—";
+    tr.appendChild(tdRoute);
+
+    drugStripeIndex += 1;
+    const isDarkStripe = (drugStripeIndex % 2 === 0);
+    tr.style.background = isDarkStripe
+      ? "linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.07))"
+      : "linear-gradient(to bottom, rgba(0,0,0,0.06), rgba(0,0,0,0.03))";
+
+    let nid = null;
+    if (drug.dosingNote) {
+      nid = `${(drug.name || "").replace(/\W+/g, "_")}_${drugStripeIndex}`;
+      const btn = document.createElement("button");
+      btn.className = "note-icon";
+      btn.type = "button";
+      btn.title = "Show dosing note";
+      btn.textContent = "ⓘ";
+      btn.addEventListener("click", () => toggleNote(nid));
+      tdDrug.appendChild(btn);
+      tr.setAttribute("data-note-id", nid);
+    }
+
+    // Calculated dose
+    const tdCalc = document.createElement("td");
+    tdCalc.setAttribute("data-label", COL_LABELS[4]);
+
+    // Special: vital signs
+    if (drug.special === "vital_signs") {
+      const vitals = estimateVitalSigns(state.ageYears, state.weightKg);
+      if (vitals) {
+        tdCalc.innerHTML = `<span class="calc">HR: ${vitals.hr} bpm</span><span class="sub">RR: ${vitals.rr} /min | SBP: ${vitals.sbp} mmHg</span>`;
+      } else {
+        tdCalc.innerHTML = `<span class="calc">—</span>`;
+      }
+      tr.appendChild(tdCalc);
+      tbody.appendChild(tr);
+      if (drug.dosingNote && nid) {
+        const noteTr = document.createElement("tr");
+        noteTr.id = `note-${nid}`;
+        noteTr.className = "note-row";
+        noteTr.style.display = "none";
+        const noteTd = document.createElement("td");
+        noteTd.colSpan = 5;
+        noteTd.setAttribute("data-label", "Note");
+        noteTd.innerHTML = `<strong>Note:</strong> ${drug.dosingNote}`;
+        noteTr.appendChild(noteTd);
+        tbody.appendChild(noteTr);
+      }
+      return;
+    }
+
+    // Special: uncuffed ETT
+    if (drug.special === "uncuffed_ett") {
+      const size = estimateUncuffedETT(state.ageYears, state.weightKg, state.heightCm);
+      const depth = estimateUncuffedETTDepth(state.ageYears, state.weightKg, state.heightCm, state.sex);
+      tdCalc.innerHTML = `<span class="calc">${(Number.isFinite(size) && size > 0) ? `${size.toFixed(1)} mm ID` : "—"}</span><span class="sub">${(Number.isFinite(depth) && depth > 0) ? `Insertion depth: ${depth} cm at teeth` : "Insertion depth: —"}</span>`;
+      tr.appendChild(tdCalc);
+      tbody.appendChild(tr);
+      if (drug.dosingNote && nid) {
+        const noteTr = document.createElement("tr");
+        noteTr.id = `note-${nid}`;
+        noteTr.className = "note-row";
+        noteTr.style.display = "none";
+        const noteTd = document.createElement("td");
+        noteTd.colSpan = 5;
+        noteTd.innerHTML = `<strong>Note:</strong> ${drug.dosingNote}`;
+        noteTr.appendChild(noteTd);
+        tbody.appendChild(noteTr);
+      }
+      return;
+    }
+
+    // Special: cuffed ETT
+    if (drug.special === "cuffed_ett") {
+      const size = estimateCuffedETT(state.ageYears, state.weightKg, state.heightCm);
+      const depth = estimateCuffedETTDepth(state.ageYears, state.weightKg, state.heightCm, state.sex);
+      tdCalc.innerHTML = `<span class="calc">${(Number.isFinite(size) && size > 0) ? `${size.toFixed(1)} mm ID` : "—"}</span><span class="sub">${(Number.isFinite(depth) && depth > 0) ? `Insertion depth: ${depth} cm at teeth` : "Insertion depth: —"}</span>`;
+      tr.appendChild(tdCalc);
+      tbody.appendChild(tr);
+      if (drug.dosingNote && nid) {
+        const noteTr = document.createElement("tr");
+        noteTr.id = `note-${nid}`;
+        noteTr.className = "note-row";
+        noteTr.style.display = "none";
+        const noteTd = document.createElement("td");
+        noteTd.colSpan = 5;
+        noteTd.innerHTML = `<strong>Note:</strong> ${drug.dosingNote}`;
+        noteTr.appendChild(noteTd);
+        tbody.appendChild(noteTr);
+      }
+      return;
+    }
+
+    // Special: blade
+    if (drug.special === "blade") {
+      const rec = estimateBlade(state.ageYears, state.weightKg);
+      tdCalc.innerHTML = `<span class="calc">${rec || "—"}</span>`;
+      tr.appendChild(tdCalc);
+      tbody.appendChild(tr);
+      if (drug.dosingNote && nid) {
+        const noteTr = document.createElement("tr");
+        noteTr.id = `note-${nid}`;
+        noteTr.className = "note-row";
+        noteTr.style.display = "none";
+        const noteTd = document.createElement("td");
+        noteTd.colSpan = 5;
+        noteTd.innerHTML = `<strong>Note:</strong> ${drug.dosingNote}`;
+        noteTr.appendChild(noteTd);
+        tbody.appendChild(noteTr);
+      }
+      return;
+    }
+
+    // Special: IO needle
+    if (drug.special === "io_needle") {
+      let rec = estimateIoNeedle(state.weightKg);
+      if (!rec && (Number(state.ageYears) || 0) >= 18 && !state.weightKg) {
+        rec = "25–45 mm (blue or yellow; based on habitus)";
+      }
+      tdCalc.innerHTML = `<span class="calc">${rec || "—"}</span>`;
+      tr.appendChild(tdCalc);
+      tbody.appendChild(tr);
+      if (drug.dosingNote && nid) {
+        const noteTr = document.createElement("tr");
+        noteTr.id = `note-${nid}`;
+        noteTr.className = "note-row";
+        noteTr.style.display = "none";
+        const noteTd = document.createElement("td");
+        noteTd.colSpan = 5;
+        noteTd.innerHTML = `<strong>Note:</strong> ${drug.dosingNote}`;
+        noteTr.appendChild(noteTd);
+        tbody.appendChild(noteTr);
+      }
+      return;
+    }
+
+    // Special: BVM
+    if (drug.special === "bvm") {
+      const rec = estimateBvm(state.ageYears, state.weightKg);
+      tdCalc.innerHTML = `<span class="calc">${rec || "—"}</span>`;
+      tr.appendChild(tdCalc);
+      tbody.appendChild(tr);
+      if (drug.dosingNote && nid) {
+        const noteTr = document.createElement("tr");
+        noteTr.id = `note-${nid}`;
+        noteTr.className = "note-row";
+        noteTr.style.display = "none";
+        const noteTd = document.createElement("td");
+        noteTd.colSpan = 5;
+        noteTd.innerHTML = `<strong>Note:</strong> ${drug.dosingNote}`;
+        noteTr.appendChild(noteTd);
+        tbody.appendChild(noteTr);
+      }
+      return;
+    }
+
+    // Special: Kcentra
+    if (drug.special === "kcentra") {
+      const wt = Number(state.weightKg) || 0;
+      const cid = `${(drug.name || "").replace(/\W+/g, "_")}_inr`;
+      const inr = parseFloat(state.controlValues[cid]) || 0;
+
+      if (!wt || inr < 2) {
+        tdCalc.innerHTML = `<span class="calc">—</span><span class="sub">Enter weight and INR ≥ 2</span>`;
+      } else {
+        const dosingWeight = Math.min(wt, 100);
+        let unitsPerKg = 0, maxUnits = 0;
+        if (inr >= 2 && inr < 4) { unitsPerKg = 25; maxUnits = 2500; }
+        else if (inr >= 4 && inr <= 6) { unitsPerKg = 35; maxUnits = 3500; }
+        else if (inr > 6) { unitsPerKg = 50; maxUnits = 5000; }
+
+        if (unitsPerKg) {
+          let doseUnits = dosingWeight * unitsPerKg;
+          if (maxUnits) doseUnits = Math.min(doseUnits, maxUnits);
+          const concUnitsPerMl = Number(drug.concentrationMgPerMl) || 0;
+          const ml = concUnitsPerMl > 0 ? (doseUnits / concUnitsPerMl) : null;
+          tdCalc.innerHTML = `<span class="calc">${doseUnits.toFixed(0)} units</span>${ml != null ? `<span class="sub">${ml.toFixed(1)} mL</span>` : ""}`;
+        } else {
+          tdCalc.innerHTML = `<span class="calc">—</span>`;
+        }
+      }
+
+      tr.appendChild(tdCalc);
+      tbody.appendChild(tr);
+      if (drug.dosingNote && nid) {
+        const noteTr = document.createElement("tr");
+        noteTr.id = `note-${nid}`;
+        noteTr.className = "note-row";
+        noteTr.style.display = "none";
+        const noteTd = document.createElement("td");
+        noteTd.colSpan = 5;
+        noteTd.innerHTML = `<strong>Note:</strong> ${drug.dosingNote}`;
+        noteTr.appendChild(noteTd);
+        tbody.appendChild(noteTr);
+      }
+      return;
+    }
+
+    // Special: Parkland
+    if (drug.special === "parkland") {
+      const wt = Number(state.weightKg) || 0;
+      const baseId = (drug.name || "").replace(/\W+/g, "_");
+      const tbsaKey = `${baseId}_tbsa_pct`;
+      const tbsa = parseFloat(state.controlValues[tbsaKey]);
+
+      if (!wt || !Number.isFinite(tbsa) || tbsa <= 0) {
+        tdCalc.innerHTML = `<span class="calc">—</span><span class="sub">Enter weight (kg) and %TBSA burned</span>`;
+      } else {
+        const mlPerKg = wt <= 30 ? 3 : 4;
+        const total24 = mlPerKg * wt * tbsa;
+        const first8 = total24 / 2;
+        const next16 = total24 / 2;
+        const first8Rate = first8 / 8;
+        const next16Rate = next16 / 16;
+        tdCalc.innerHTML = `<span class="calc">${fmt(total24, 0)} mL in 24 hr</span><span class="sub">First 8 hr: ${fmt(first8Rate, 0)} mL/hr; next 16 hr: ${fmt(next16Rate, 0)} mL/hr</span>`;
+      }
+
+      tr.appendChild(tdCalc);
+      tbody.appendChild(tr);
+      if (drug.dosingNote && nid) {
+        const noteTr = document.createElement("tr");
+        noteTr.id = `note-${nid}`;
+        noteTr.className = "note-row";
+        noteTr.style.display = "none";
+        const noteTd = document.createElement("td");
+        noteTd.colSpan = 5;
+        noteTd.innerHTML = `<strong>Note:</strong> ${drug.dosingNote}`;
+        noteTr.appendChild(noteTd);
+        tbody.appendChild(noteTr);
+      }
+      return;
+    }
+
+    // Default bolus pathway
+    const u = amountUnit(drug);
+    const amount = calcDoseMg(drug, state.weightKg, state.ageYears);
+    const mgPrec = drug.display?.mgPrecision ?? 3;
+    const mlPrec = drug.display?.mlPrecision ?? 2;
+
+    if (amount == null) {
+      tdCalc.innerHTML = `<span class="calc">—</span>`;
+    } else {
+      const concInDoseUnits = getConcentrationInDoseUnits(drug);
+      const rawMl = concInDoseUnits > 0 ? (amount / concInDoseUnits) : null;
+      const mlRounded = rawMl == null ? null : roundToStep(rawMl, state.roundMlTo);
+      const amtStr = fmt(amount, mgPrec) + ` ${u}`;
+      const mlStr = mlRounded == null ? "—" : `${fmt(mlRounded, mlPrec)} mL`;
+      tdCalc.innerHTML = `<span class="calc">${amtStr}</span><span class="sub">${amtStr} = ${mlStr}</span>`;
+    }
+
+    tr.appendChild(tdCalc);
+    tbody.appendChild(tr);
+
+    if (drug.dosingNote && nid) {
+      const noteTr = document.createElement("tr");
+      noteTr.id = `note-${nid}`;
+      noteTr.className = "note-row";
+      noteTr.style.display = "none";
+      const noteTd = document.createElement("td");
+      noteTd.colSpan = 5;
+      noteTd.setAttribute("data-label", "Note");
+      noteTd.innerHTML = `<strong>Note:</strong> ${drug.dosingNote}`;
+      noteTr.appendChild(noteTd);
+      tbody.appendChild(noteTr);
+    }
+  });
+
+  // Rebuild jump dropdown
+  const jump = document.getElementById("sectionJump");
+  const doseTableEl = document.getElementById("doseTable");
+  if (jump && doseTableEl) {
+    jump.innerHTML = '<option value="">Select…</option>';
+    const sectionRows = Array.from(doseTableEl.querySelectorAll("tr.section-row"));
+    const options = sectionRows.map(tr => ({ id: tr.id, label: (tr.textContent || "").trim() }))
+      .filter(o => o.id && o.label)
+      .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+    options.forEach(o => {
+      const opt = document.createElement("option");
+      opt.value = o.id;
+      opt.textContent = o.label;
+      jump.appendChild(opt);
+    });
+  }
+}
+
+// ==================== LOG RENDERING ====================
+
+function renderLogOverlay() {
+  const cont = document.getElementById("logOverlayContent");
+  if (!cont) return;
+  cont.innerHTML = "";
+
+  const disclaimer = document.createElement("p");
+  disclaimer.className = "log-disclaimer";
+  disclaimer.textContent = "This log is a calculator aid only and does not store patient identifiers or replace documentation in the medical record.";
+  cont.appendChild(disclaimer);
+
+  if (!Array.isArray(window._doseLog) || !window._doseLog.length) {
+    const empty = document.createElement("p");
+    empty.textContent = "No doses recorded yet.";
+    cont.appendChild(empty);
+    return;
+  }
+
+  window._doseLog.forEach(entry => {
+    const div = document.createElement("div");
+    div.className = "log-entry";
+    const when = entry.timestamp || "";
+    const drugName = entry.drugName || entry.drug || "—";
+    const doseText = entry.doseText || "";
+    div.innerHTML = `<div><strong>${drugName}</strong></div>${doseText ? `<div class="log-dose">${doseText}</div>` : ""}<div class="log-time">${when}</div>`;
+    cont.appendChild(div);
+  });
+}
+
+// ==================== BUILD ROWS (DEMO DATA) ====================
+
+function buildAllRows() {
+  state.rows = [];
+
+  // VITAL SIGNS
+  state.rows.push({ type: "section", label: "VITAL SIGNS", rank: 1 });
+  state.rows.push({ type: "drug", name: "Normal Vital Sign Ranges", concentrationMgPerMl: 0, dosing: { type: "range_text", value: "Age-based ranges" }, route: "—", display: {}, units: {}, dosingNote: "HR=Heart Rate, RR=Respiratory Rate, SBP=Systolic BP. Ranges are approximate.", special: "vital_signs", rank: 2 });
+
+  // EQUIPMENT
+  state.rows.push({ type: "section", label: "EQUIPMENT", rank: 3 });
+  state.rows.push({ type: "drug", name: "UNCUFFED ET TUBE (estimated SIZE)", concentrationMgPerMl: 0, dosing: { type: "range_text", value: "" }, route: "ETT", display: {}, units: {}, dosingNote: "Enter height, weight, age for estimation", special: "uncuffed_ett", rank: 4 });
+  state.rows.push({ type: "drug", name: "CUFFED ET TUBE (estimated SIZE)", concentrationMgPerMl: 0, dosing: { type: "range_text", value: "" }, route: "ETT", display: {}, units: {}, dosingNote: "Enter height, weight, age for estimation", special: "cuffed_ett", rank: 5 });
+  state.rows.push({ type: "drug", name: "LARYNGOSCOPE BLADE (estimated)", concentrationMgPerMl: 0, dosing: { type: "range_text", value: "" }, route: "EQUIP", display: {}, units: {}, dosingNote: "Enter age or weight for estimation", special: "blade", rank: 6 });
+  state.rows.push({ type: "drug", name: "IO NEEDLE (estimated SIZE)", concentrationMgPerMl: 0, dosing: { type: "range_text", value: "" }, route: "EQUIP", display: {}, units: {}, dosingNote: "Enter weight for estimation", special: "io_needle", rank: 7 });
+  state.rows.push({ type: "drug", name: "BVM MASK (estimated SIZE)", concentrationMgPerMl: 0, dosing: { type: "range_text", value: "" }, route: "EQUIP", display: {}, units: {}, dosingNote: "Enter age or weight for estimation", special: "bvm", rank: 8 });
+
+  // RSI
+  state.rows.push({ type: "section", label: "RSI", rank: 9 });
+  state.rows.push({ type: "subsection", label: "INDUCING AGENTS", rank: 10 });
+  state.rows.push({ type: "drug", name: "ETOMIDATE", concentrationMgPerMl: 2, dosing: { type: "mg_per_kg", value: 0.3 }, route: "IV, IO", display: { mgPrecision: 1, mlPrecision: 2 }, maxMg: 20, units: { concentration: "mg/mL" }, dosingNote: "Typical induction 0.2–0.3 mg/kg; consider lower dose in elderly/unstable.", rank: 11 });
+  state.rows.push({ type: "drug", name: "KETAMINE", concentrationMgPerMl: 10, dosing: { type: "mg_per_kg", value: 2 }, route: "IV, IO", display: { mgPrecision: 0, mlPrecision: 2 }, maxMg: 200, units: { concentration: "mg/mL" }, dosingNote: "IV induction typically 1–2 mg/kg.", rank: 12 });
+  state.rows.push({ type: "subsection", label: "PARALYTICS", rank: 13 });
+  state.rows.push({ type: "drug", name: "ROCURONIUM", concentrationMgPerMl: 10, dosing: { type: "mg_per_kg", value: 1.2 }, route: "IV, IM, IO", display: { mgPrecision: 1, mlPrecision: 2 }, maxMg: 100, units: { concentration: "mg/mL" }, dosingNote: "RSI dose 1.2 mg/kg; cap 100 mg single dose.", rank: 14 });
+  state.rows.push({ type: "drug", name: "SUCCINYLCHOLINE", concentrationMgPerMl: 20, dosing: { type: "mg_per_kg", value: 1.5 }, route: "IV, IM, IO", display: { mgPrecision: 1, mlPrecision: 2 }, maxMg: 150, units: { concentration: "mg/mL" }, dosingNote: "1–2 mg/kg; cap 150 mg single dose.", rank: 15 });
+
+  // ANTICOAG REVERSAL
+  state.rows.push({ type: "section", label: "ANTICOAG REVERSAL", rank: 16 });
+  state.rows.push({ type: "drug", name: "KCENTRA (4F-PCC) — WARFARIN REVERSAL", concentrationMgPerMl: 500, dosing: { type: "range_text", value: "" }, route: "IV", display: { mgPrecision: 0, mlPrecision: 1 }, units: { amount: "units", concentration: "units/mL" }, dosingNote: "Dose per protocol based on INR & actual body weight (cap 100 kg): 25 u/kg (INR 2–<4); 35 u/kg (INR 4–6); 50 u/kg (>6).", special: "kcentra", control: { key: "inr", label: "INR", type: "number" }, rank: 17 });
+
+  // BURN RESUSCITATION
+  state.rows.push({ type: "section", label: "BURN RESUSCITATION", rank: 18 });
+  state.rows.push({ type: "drug", name: "PARKLAND FORMULA (LR BURN RESUSCITATION)", concentrationMgPerMl: 1, dosing: { type: "range_text", value: "" }, route: "IV", display: {}, units: { amount: "mL", concentration: "mL" }, dosingNote: "≤30 kg: 3 mL × kg × %TBSA; >30 kg: 4 mL × kg × %TBSA. Give 50% in first 8 hr, 50% over next 16 hr using LR.", special: "parkland", controls: [{ key: "tbsa_pct", label: "%TBSA burned", type: "number" }], rank: 19 });
+}
+
+// ==================== EVENT WIRING ====================
+
+$("#weightKg").addEventListener("input", (e) => {
+  const kg = parseFloat(e.target.value) || 0;
+  state.weightKg = kg;
+  const lbInput = document.getElementById("weightLb");
+  if (lbInput) {
+    lbInput.value = kg > 0 ? (kg * 2.20462).toFixed(1) : "";
+  }
+  if (e.target.value !== "") {
+    state.userWeightOverride = true;
+    state.ibwAutoFilled = false;
+    setKgDisplayPurple(false);
+    document.body.classList.remove("ibw-active", "tbw-active");
+    const methodLabel = document.getElementById("ibwMethodLabel");
+    if (methodLabel) methodLabel.textContent = "";
+  } else {
+    state.userWeightOverride = false;
+  }
+  render();
+});
+
+$("#weightLb").addEventListener("input", (e) => {
+  const lb = parseFloat(e.target.value) || 0;
+  const kg = lb > 0 ? (lb / 2.20462) : 0;
+  const kgInput = document.getElementById("weightKg");
+  if (kgInput) kgInput.value = kg ? kg.toFixed(2) : "";
+  state.weightKg = kg || 0;
+  if (lb > 0) {
+    state.userWeightOverride = true;
+    state.ibwAutoFilled = false;
+    setKgDisplayPurple(false);
+    document.body.classList.remove("ibw-active", "tbw-active");
+    const methodLabel = document.getElementById("ibwMethodLabel");
+    if (methodLabel) methodLabel.textContent = "";
+  } else {
+    state.userWeightOverride = false;
+  }
+  render();
+});
+
+let ageYearsManualEdit = false;
+$("#ageYears").addEventListener("input", e => {
+  ageYearsManualEdit = true;
+  state.ageYears = parseFloat(e.target.value) || 0;
+  render();
+});
+
+const ageMonthsSel = document.getElementById("ageMonths");
+const ageDaysInput = document.getElementById("ageDays");
+
+if (ageMonthsSel) {
+  ageMonthsSel.addEventListener("change", e => {
+    const val = e.target.value;
+    if (val === "0") {
+      if (ageDaysInput) {
+        ageDaysInput.style.display = "block";
+        ageDaysInput.value = "";
+      }
+    } else {
+      if (ageDaysInput) {
+        ageDaysInput.style.display = "none";
+        ageDaysInput.value = "";
+      }
+    }
+    if (val !== "" && val !== "0") {
+      updateAgeFromMonths();
+    }
+  });
+}
+
+if (ageDaysInput) {
+  ageDaysInput.addEventListener("input", e => {
+    updateAgeFromDays();
+  });
+}
+
+function updateAgeFromMonths() {
+  const monthsVal = ageMonthsSel ? ageMonthsSel.value : "";
+  if (monthsVal === "" || monthsVal === "0") return;
+  const months = parseInt(monthsVal, 10);
+  const yearsInput = document.getElementById("ageYears");
+  let wholeYears = 0;
+  if (yearsInput && yearsInput.value !== "") {
+    wholeYears = Math.floor(parseFloat(yearsInput.value) || 0);
+  }
+  const decimal = months / 12;
+  const totalYears = wholeYears + decimal;
+  if (yearsInput) yearsInput.value = totalYears.toFixed(2);
+  state.ageYears = Math.round(totalYears * 10000) / 10000;
+  ageYearsManualEdit = false;
+  render();
+}
+
+function updateAgeFromDays() {
+  if (!ageDaysInput) return;
+  const days = parseInt(ageDaysInput.value, 10) || 0;
+  const yearsInput = document.getElementById("ageYears");
+  let wholeYears = 0;
+  if (yearsInput && yearsInput.value !== "") {
+    wholeYears = Math.floor(parseFloat(yearsInput.value) || 0);
+  }
+  const decimal = days / 365;
+  const totalYears = wholeYears + decimal;
+  if (yearsInput) yearsInput.value = totalYears.toFixed(2);
+  state.ageYears = Math.round(totalYears * 10000) / 10000;
+  ageYearsManualEdit = false;
+  render();
+}
+
+$("#heightIn").addEventListener("input", e => {
+  const inches = parseFloat(e.target.value) || 0;
+  state.heightCm = inches > 0 ? inches * 2.54 : 0;
+  const cmInput = document.getElementById("heightCm");
+  if (cmInput) cmInput.value = inches > 0 ? (inches * 2.54).toFixed(1) : "";
+  render();
+});
+
+const heightCmInput = document.getElementById("heightCm");
+if (heightCmInput) {
+  heightCmInput.addEventListener("input", e => {
+    const cm = parseFloat(e.target.value) || 0;
+    state.heightCm = cm > 0 ? cm : 0;
+    const inInput = document.getElementById("heightIn");
+    if (inInput) inInput.value = cm > 0 ? (cm / 2.54).toFixed(1) : "";
+    render();
+  });
+}
+
+$("#sexSel").addEventListener("change", e => {
+  state.sex = (e.target.value || "").toLowerCase();
+  render();
+});
+
+const habitusSel = document.getElementById("habitusScore");
+if (habitusSel) {
+  habitusSel.addEventListener("change", (e) => {
+    const val = parseInt(e.target.value, 10);
+    state.habitusScore = Number.isFinite(val) ? val : null;
+    render();
+  });
+}
+
+// Quick Find
+const qfBtn = $("#quickFindBtn");
+const qfInput = $("#quickFindInput");
+qfBtn.addEventListener("click", () => {
+  if (qfInput.style.display === "none" || !qfInput.style.display) {
+    qfInput.style.display = "inline-block";
+    state.quickFilter = "";
+    qfInput.value = "";
+    qfInput.focus();
+  } else {
+    qfInput.style.display = "none";
+    state.quickFilter = "";
+    render();
+  }
+});
+qfInput.addEventListener("input", (e) => {
+  state.quickFilter = (e.target.value || "").toLowerCase().trim();
+  render();
+});
+qfInput.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    qfInput.style.display = "none";
+    state.quickFilter = "";
+    render();
+  }
+});
+
+// Clear button
+const clearBtn = document.getElementById("clearBtn");
+if (clearBtn) {
+  clearBtn.addEventListener("click", () => {
+    document.querySelectorAll(".controls input").forEach(el => { el.value = ""; });
+    document.querySelectorAll(".controls select").forEach(el => { el.selectedIndex = 0; });
+    if (ageDaysInput) { ageDaysInput.style.display = "none"; ageDaysInput.value = ""; }
+    ageYearsManualEdit = false;
+    if (qfInput) { qfInput.value = ""; qfInput.style.display = "none"; }
+    state.weightKg = 0;
+    state.heightCm = 0;
+    state.ageYears = 0;
+    state.sex = "";
+    state.habitusScore = null;
+    state.userWeightOverride = false;
+    state.ibwAutoFilled = false;
+    state.tbwEstimateKg = 0;
+    state.tbwFactor = null;
+    state.ibwMode = null;
+    state.ibwMethod = "";
+    state.quickFilter = "";
+    setKgDisplayPurple(false);
+    document.body.classList.remove("ibw-active", "tbw-active");
+    const methodLabel = document.getElementById("ibwMethodLabel");
+    if (methodLabel) methodLabel.textContent = "";
+    render();
+  });
+}
+
+// Jump to section
+const jump = document.getElementById("sectionJump");
+if (jump) {
+  jump.addEventListener("change", function() {
+    const id = this.value;
+    if (!id) return;
+    const target = document.getElementById(id);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    this.selectedIndex = 0;
+  });
+}
+
+// Log overlay
+window.addEventListener("load", function() {
+  const logBtn = document.getElementById("doseLogButton");
+  const logOverlay = document.getElementById("logOverlay");
+  const logBack = document.getElementById("logOverlayBack");
+
+  if (logBtn && logOverlay) {
+    logBtn.addEventListener("click", () => {
+      logOverlay.style.display = "block";
+      renderLogOverlay();
+    });
+    logBtn.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        logOverlay.style.display = "block";
+        renderLogOverlay();
+      }
+    });
+  }
+
+  if (logBack) {
+    logBack.addEventListener("click", () => {
+      logOverlay.style.display = "none";
+    });
+  }
+
+  if (logOverlay) {
+    logOverlay.addEventListener("click", (e) => {
+      if (e.target === logOverlay) {
+        logOverlay.style.display = "none";
+      }
+    });
+  }
+});
+
+// Habitus overlay
+window.addEventListener("load", function() {
+  const infoBtn = document.getElementById("habitusInfoBtn");
+  const overlay = document.getElementById("habitusOverlay");
+  const backBtn = document.getElementById("habitusBack");
+
+  if (!infoBtn || !overlay || !backBtn) return;
+
+  infoBtn.addEventListener("click", () => { overlay.style.display = "block"; });
+  backBtn.addEventListener("click", () => { overlay.style.display = "none"; });
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.style.display = "none";
+  });
+});
+
+// ==================== INIT ====================
+buildAllRows();
+render();
+</script>
+
+</body>
+</html>
