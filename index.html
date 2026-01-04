@@ -926,7 +926,8 @@
         // Form submission handler (placeholder - needs backend)
         function handleSubmit(e) {
             e.preventDefault();
-            alert('Thank you for your message! We will get back to you soon.\n\nNote: Contact form backend coming soon. Please email us directly at info@naemedsolutions.com');
+fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(e.target))) }).then(r => r.ok ? alert("Message sent!") : r.text().then(t => alert("Error: " + t))).catch(err => alert("Error: " + err));
+
         }
 
         function showPage(pageId) {
