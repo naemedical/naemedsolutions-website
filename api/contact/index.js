@@ -19,7 +19,7 @@ module.exports = async function (context, req) {
     }
 
     const toEmail = process.env.CONTACT_TO_EMAIL || "info@naemedsolutions.com";
-    const fromEmail = process.env.ACS_FROM_EMAIL || "info@naemedsolutions.com";
+    const fromEmail = process.env.ACS_FROM_EMAIL || "donotreply@naemedsolutions.com";
 
     const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
     const name = body.name || "";
