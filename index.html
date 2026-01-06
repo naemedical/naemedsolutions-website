@@ -625,7 +625,15 @@
     <li><a href="https://medcalc.naemedsolutions.com" target="_blank">Medication Calculator</a></li>
 </ul>
                 </li>
-                <li><a onclick="showPage('home'); scrollToSection('contact')">Contact</a></li>
+       <li><a onclick="showPage('home'); scrollToSection('contact')">Contact</a></li>
+
+<li class="dropdown">
+  <a onclick="toggleFunDropdown(event)">Fun ▼</a>
+  <ul class="dropdown-menu" id="funDropdown">
+    <li><a href="asteroids.html" target="_blank">Asteroids</a></li>
+  </ul>
+</li>
+
             </ul>
         </div>
     </nav>
@@ -884,16 +892,28 @@
             document.getElementById('navLinks').classList.toggle('active');
         }
 
-        // Apps dropdown toggle
-        function toggleDropdown(event) {
-            event.stopPropagation();
-            document.getElementById('appsDropdown').classList.toggle('show');
-        }
+// Apps dropdown toggle
+function toggleDropdown(event) {
+    event.stopPropagation();
+    document.getElementById('appsDropdown').classList.toggle('show');
+}
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function() {
-            document.getElementById('appsDropdown').classList.remove('show');
-        });
+// Fun dropdown toggle
+function toggleFunDropdown(event) {
+    event.stopPropagation();
+    document.getElementById('funDropdown').classList.toggle('show');
+}
+
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function() {
+    const apps = document.getElementById('appsDropdown');
+    if (apps) apps.classList.remove('show');
+
+    const fun = document.getElementById('funDropdown');
+    if (fun) fun.classList.remove('show');
+});
+
 
 // Show overlay
         function showOverlay(overlayId) {
@@ -960,7 +980,3 @@ function scrollToSection(sectionId) {
 </body>
 </html>
        
-
-
-
-
