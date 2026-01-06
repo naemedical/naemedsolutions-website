@@ -7,8 +7,8 @@
 <style>
   :root{
     --pad: 12px;
-    --hudH: 0px;
-    --btn: 64px;
+    --btn: 72px;
+    --joy: 168px;
   }
 
   html,body{
@@ -16,8 +16,8 @@
     height:100%;
     background:#0b1020;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    overflow:hidden;                 /* prevent page scroll while playing */
-    touch-action:none;               /* device-agnostic: disable browser gestures */
+    overflow:hidden;
+    touch-action:none;
   }
 
   .wrap{
@@ -39,7 +39,7 @@
     border:8px solid #0a1024;
     border-radius:16px;
     box-shadow:0 20px 60px rgba(0,0,0,.45);
-    touch-action:none;               /* allow pointer events + prevent panning */
+    touch-action:none;
   }
 
   .hud{
@@ -48,7 +48,7 @@
     left:50%;
     transform:translateX(-50%);
     color:#e5e7eb;
-    font-weight:700;
+    font-weight:800;
     text-shadow:0 2px 0 rgba(0,0,0,.35);
     white-space:nowrap;
     pointer-events:none;
@@ -59,7 +59,21 @@
     backdrop-filter: blur(6px);
   }
 
-  /* Touch controls (only shown on touch / small screens) */
+  .hint{
+    position: fixed;
+    right: 12px;
+    top: calc(52px + env(safe-area-inset-top));
+    color: rgba(226,232,240,.75);
+    font-size: 12px;
+    font-weight: 800;
+    background: rgba(2,6,23,.25);
+    padding: 6px 10px;
+    border-radius: 999px;
+    pointer-events:none;
+    user-select:none;
+  }
+
+  /* Touch controls */
   .controls{
     position: fixed;
     left: 0; right: 0;
@@ -71,13 +85,15 @@
       12px;
     display:flex;
     justify-content:space-between;
+    align-items:flex-end;
     gap: 12px;
-    pointer-events:none; /* enable only on buttons */
+    pointer-events:none; /* enable only on interactive elements */
     user-select:none;
   }
 
-  .cluster{
+  .leftCluster{
     display:flex;
+    flex-direction:column;
     gap: 10px;
     pointer-events:auto;
   }
@@ -85,18 +101,26 @@
   .btn{
     width: var(--btn);
     height: var(--btn);
-    border-radius: 16px;
+    border-radius: 18px;
     border: 2px solid rgba(148,163,184,.35);
     background: rgba(2,6,23,.55);
     color: #e5e7eb;
-    font-weight: 800;
-    font-size: 18px;
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 0.5px;
     line-height: 1;
     display:grid;
     place-items:center;
     box-shadow: 0 10px 25px rgba(0,0,0,.35);
     touch-action:none;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn.big{
+    width: calc(var(--btn) * 1.28);
+    height: calc(var(--btn) * 1.28);
+    border-radius: 22px;
+    font-size: 18px;
   }
 
   .btn:active,
@@ -106,23 +130,50 @@
     border-color: rgba(226,232,240,.45);
   }
 
-  .btn.big{
-    width: calc(var(--btn) * 1.2);
-    height: calc(var(--btn) * 1.2);
-    border-radius: 18px;
-    font-size: 20px;
+  .joy{
+    width: var(--joy);
+    height: var(--joy);
+    border-radius: 999px;
+    border: 2px solid rgba(148,163,184,.35);
+    background: radial-gradient(circle at 30% 25%, rgba(148,163,184,.18), rgba(2,6,23,.55) 65%);
+    box-shadow: 0 10px 25px rgba(0,0,0,.35);
+    position: relative;
+    pointer-events:auto;
+    touch-action:none;
+    -webkit-tap-highlight-color: transparent;
+    display:grid;
+    place-items:center;
   }
 
-  .hint{
-    position: fixed;
-    right: 12px;
-    top: calc(52px + env(safe-area-inset-top));
-    color: rgba(226,232,240,.75);
-    font-size: 12px;
-    font-weight: 700;
-    background: rgba(2,6,23,.25);
-    padding: 6px 10px;
+  .joy::after{
+    content:"";
+    position:absolute;
+    inset: 14px;
     border-radius: 999px;
+    border: 1px solid rgba(226,232,240,.12);
+  }
+
+  .joyKnob{
+    width: calc(var(--joy) * 0.42);
+    height: calc(var(--joy) * 0.42);
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 25%, rgba(226,232,240,.65), rgba(148,163,184,.22));
+    border: 2px solid rgba(226,232,240,.25);
+    box-shadow: 0 14px 30px rgba(0,0,0,.45);
+    transform: translate(0px, 0px);
+    will-change: transform;
+  }
+
+  .joyLabel{
+    position:absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 900;
+    color: rgba(226,232,240,.75);
+    letter-spacing: 0.7px;
+    user-select:none;
     pointer-events:none;
   }
 
@@ -134,7 +185,7 @@
 </head>
 
 <body>
-  <div class="hud" id="hud">←/→ rotate • ↑ thrust • Space shoot • Enter new game • Infinite world</div>
+  <div class="hud" id="hud">←/→ rotate • ↑ thrust • Space fire • Enter new game • On mobile: joystick + FIRE</div>
   <div class="hint">Touch controls enabled</div>
 
   <div class="wrap">
@@ -143,14 +194,14 @@
 
   <!-- Touch controls -->
   <div class="controls" id="controls">
-    <div class="cluster">
-      <button class="btn" id="btnLeft"  aria-label="Rotate left">⟲</button>
-      <button class="btn" id="btnRight" aria-label="Rotate right">⟳</button>
-      <button class="btn big" id="btnThrust" aria-label="Thrust">▲</button>
-    </div>
-    <div class="cluster">
-      <button class="btn big" id="btnShoot" aria-label="Shoot">●</button>
+    <div class="leftCluster">
+      <button class="btn big" id="btnShoot" aria-label="Fire">FIRE</button>
       <button class="btn" id="btnNew" aria-label="New game">⏎</button>
+    </div>
+
+    <div class="joy" id="joy" aria-label="Virtual joystick">
+      <div class="joyKnob" id="joyKnob"></div>
+      <div class="joyLabel">MOVE</div>
     </div>
   </div>
 
@@ -165,16 +216,23 @@ let W = 960, H = 720;        // logical (CSS pixel) size
 let DPR = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 const HUD = document.getElementById('hud');
 
+function isTouchUI(){
+  // "touch UI" meaning we show joystick + FIRE (coarse pointer / no hover)
+  return matchMedia('(hover:none)').matches || matchMedia('(pointer:coarse)').matches;
+}
+
 function resizeCanvas(){
-  // Maintain a 4:3 aspect ratio like the original, but fit any screen
   const pad = 24;
-  const topHud = 70; // space for HUD
-  const bottomControls = (matchMedia('(hover:hover) and (pointer:fine)').matches) ? 10 : 140;
+  const topHud = 76;
+  const bottomControls = isTouchUI() ? 220 : 10;
 
   const availW = Math.max(320, window.innerWidth - pad);
   const availH = Math.max(320, window.innerHeight - pad - topHud - bottomControls);
 
-  const aspect = 4/3;
+  // Desktop stays 4:3. Mobile/portrait becomes much taller (about double vertical vs 4:3 feel)
+  const portrait = window.innerHeight > window.innerWidth;
+  const aspect = portrait ? (2/3) : (4/3); // width/height
+
   let cssW = availW;
   let cssH = cssW / aspect;
   if (cssH > availH){
@@ -192,7 +250,6 @@ function resizeCanvas(){
   cv.width = Math.floor(W * DPR);
   cv.height = Math.floor(H * DPR);
 
-  // draw in logical pixels
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
 window.addEventListener('resize', resizeCanvas, { passive:true });
@@ -412,9 +469,10 @@ function makeSFX(){
 }
 const SFX = makeSFX();
 
-/* ===== Input (keyboard + touch) ===== */
+/* ===== Input (keyboard + touch + virtual joystick) ===== */
 let keys = new Set();
-const input = { left:false, right:false, thrust:false, shoot:false };
+const input = { shoot:false };
+const analog = { active:false, ang:0, mag:0 }; // joystick: direction + throttle (0..1)
 
 function userGestureUnlock(){ SFX.unlock(); }
 
@@ -454,9 +512,6 @@ function bindHoldButton(el, prop){
   el.addEventListener('pointerleave', up);
 }
 
-bindHoldButton(document.getElementById('btnLeft'), 'left');
-bindHoldButton(document.getElementById('btnRight'), 'right');
-bindHoldButton(document.getElementById('btnThrust'), 'thrust');
 bindHoldButton(document.getElementById('btnShoot'), 'shoot');
 
 document.getElementById('btnNew').addEventListener('pointerdown', (e)=>{
@@ -465,8 +520,91 @@ document.getElementById('btnNew').addEventListener('pointerdown', (e)=>{
   if (gameOver || !started) resetGame();
 }, { passive:false });
 
-// Also unlock audio on any canvas touch/click
+// Unlock audio on any canvas / joystick touch
 cv.addEventListener('pointerdown', ()=> userGestureUnlock(), { passive:true });
+
+/* ===== Virtual joystick ===== */
+const joy = document.getElementById('joy');
+const joyKnob = document.getElementById('joyKnob');
+
+const joyState = {
+  down:false,
+  pointerId:null,
+  cx:0, cy:0,
+  max: 1,
+  dx:0, dy:0
+};
+
+function setKnob(dx,dy){
+  joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+}
+
+function joyCenterFromRect(){
+  const r = joy.getBoundingClientRect();
+  joyState.cx = r.left + r.width/2;
+  joyState.cy = r.top + r.height/2;
+  // knob travel radius (in px)
+  joyState.max = (Math.min(r.width, r.height) * 0.5) - (Math.min(r.width, r.height) * 0.21);
+}
+
+function joyUpdateFromEvent(ev){
+  const x = ev.clientX - joyState.cx;
+  const y = ev.clientY - joyState.cy;
+  const d = Math.hypot(x,y) || 1;
+
+  const clamped = Math.min(d, joyState.max);
+  const nx = (x / d) * clamped;
+  const ny = (y / d) * clamped;
+
+  joyState.dx = nx;
+  joyState.dy = ny;
+  setKnob(nx, ny);
+
+  const mag = clamp(clamped / joyState.max, 0, 1);
+  analog.active = true;
+  analog.mag = mag;
+  analog.ang = Math.atan2(ny, nx);
+}
+
+function joyEnd(){
+  joyState.down = false;
+  joyState.pointerId = null;
+  setKnob(0,0);
+  analog.active = false;
+  analog.mag = 0;
+}
+
+joy.addEventListener('pointerdown', (ev)=>{
+  userGestureUnlock();
+  ev.preventDefault();
+  ev.stopPropagation();
+  joyCenterFromRect();
+  joyState.down = true;
+  joyState.pointerId = ev.pointerId;
+  try{ joy.setPointerCapture(ev.pointerId); }catch(_){}
+  joyUpdateFromEvent(ev);
+}, { passive:false });
+
+joy.addEventListener('pointermove', (ev)=>{
+  if (!joyState.down || ev.pointerId !== joyState.pointerId) return;
+  ev.preventDefault();
+  joyUpdateFromEvent(ev);
+}, { passive:false });
+
+joy.addEventListener('pointerup', (ev)=>{
+  if (ev.pointerId !== joyState.pointerId) return;
+  ev.preventDefault();
+  joyEnd();
+}, { passive:false });
+
+joy.addEventListener('pointercancel', (ev)=>{
+  if (ev.pointerId !== joyState.pointerId) return;
+  joyEnd();
+}, { passive:true });
+
+joy.addEventListener('lostpointercapture', ()=>{
+  joyEnd();
+});
 
 /* ===== State ===== */
 let ship;
@@ -541,7 +679,7 @@ function bulletSpec(){
 
 /* ===== Entities ===== */
 function newShip(){
-  return { x: 0, y: 0, vx:0, vy:0, a: -Math.PI/2, thrust:false };
+  return { x: 0, y: 0, vx:0, vy:0, a: -Math.PI/2, thrust:false, thrustAmt:1 };
 }
 
 function maybeAddBase(size, rng){
@@ -792,7 +930,6 @@ function ensureChunk(cx,cy){
     asteroids.push(a);
   }
 
-  // enemies (reduced spawn + safe distance)
   const eRoll = rng();
   const eCount = eRoll < 0.75 ? 0 : 1;
 
@@ -954,15 +1091,34 @@ function update(dt){
 
   streamWorld();
 
-  /* Ship control (keyboard OR touch) */
-  const turnLeft  = input.left  || keys.has('ArrowLeft') || keys.has('KeyA');
-  const turnRight = input.right || keys.has('ArrowRight')|| keys.has('KeyD');
-  const wantThrust = input.thrust || keys.has('ArrowUp') || keys.has('KeyW');
+  /* Ship control: keyboard OR joystick */
+  const kbLeft  = keys.has('ArrowLeft') || keys.has('KeyA');
+  const kbRight = keys.has('ArrowRight')|| keys.has('KeyD');
+  const kbThrust = keys.has('ArrowUp')  || keys.has('KeyW');
   const wantShoot  = input.shoot  || keys.has('Space')   || keys.has('Numpad0');
 
-  if (turnLeft)  ship.a -= SHIP_ROT*dt;
-  if (turnRight) ship.a += SHIP_ROT*dt;
+  const JOY_DEAD = 0.12;
+
+  let wantThrust = kbThrust;
+  let thrustAmt = 1;
+
+  if (analog.active && analog.mag > JOY_DEAD){
+    // Joystick controls direction + throttle
+    const desired = analog.ang;
+    let da = (desired - ship.a);
+    da = Math.atan2(Math.sin(da), Math.cos(da));
+    ship.a += clamp(da, -SHIP_ROT*dt, SHIP_ROT*dt);
+
+    wantThrust = true;
+    thrustAmt = clamp((analog.mag - JOY_DEAD) / (1 - JOY_DEAD), 0, 1);
+  } else {
+    // Keyboard rotation
+    if (kbLeft)  ship.a -= SHIP_ROT*dt;
+    if (kbRight) ship.a += SHIP_ROT*dt;
+  }
+
   ship.thrust = wantThrust;
+  ship.thrustAmt = thrustAmt;
 
   if (ship.thrust !== prevThrust){
     SFX.thrust(ship.thrust);
@@ -970,11 +1126,19 @@ function update(dt){
   }
 
   if (ship.thrust){
-    ship.vx += Math.cos(ship.a)*SHIP_THRUST*dt;
-    ship.vy += Math.sin(ship.a)*SHIP_THRUST*dt;
+    const tScale = ship.thrustAmt ?? 1;
+    ship.vx += Math.cos(ship.a)*SHIP_THRUST*dt*tScale;
+    ship.vy += Math.sin(ship.a)*SHIP_THRUST*dt*tScale;
+
     const tx = ship.x - Math.cos(ship.a)*SHIP_R*0.9;
     const ty = ship.y - Math.sin(ship.a)*SHIP_R*0.9;
-    if (Math.random()<0.6) particles.push({x:tx,y:ty,vx:rand(-40,40),vy:rand(-40,40),r:rand(1.5,2.8),t:rand(0.2,0.5),c:'#93c5fd'});
+    if (Math.random()<0.6) particles.push({
+      x:tx,y:ty,
+      vx:rand(-40,40),vy:rand(-40,40),
+      r:rand(1.5,2.8),
+      t:rand(0.2,0.5),
+      c:'#93c5fd'
+    });
   }
 
   ship.vx *= FRICTION; ship.vy *= FRICTION;
