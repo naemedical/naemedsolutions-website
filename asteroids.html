@@ -3,31 +3,200 @@
 <head>
 <meta charset="utf-8" />
 <title>Asteroids Infinite</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <style>
-  html,body{margin:0;height:100%;background:#0b1020;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
-  .wrap{display:grid;place-items:center;height:100%}
-  canvas{
-    background:radial-gradient(1200px 900px at 15% -10%, #0e1530 0%, transparent 60%),#0b1020;
-    border:8px solid #0a1024;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.45)
+  :root{
+    --pad: 12px;
+    --hudH: 0px;
+    --btn: 64px;
   }
-  .hud{position:fixed; top:12px; left:50%; transform:translateX(-50%); color:#e5e7eb; font-weight:700;
-       text-shadow:0 2px 0 rgba(0,0,0,.35); white-space:nowrap; pointer-events:none}
+
+  html,body{
+    margin:0;
+    height:100%;
+    background:#0b1020;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    overflow:hidden;                 /* prevent page scroll while playing */
+    touch-action:none;               /* device-agnostic: disable browser gestures */
+  }
+
+  .wrap{
+    display:grid;
+    place-items:center;
+    height:100%;
+    padding: var(--pad);
+    box-sizing:border-box;
+  }
+
+  canvas{
+    display:block;
+    width:100%;
+    height:auto;
+    max-width: 1100px;
+    background:
+      radial-gradient(1200px 900px at 15% -10%, #0e1530 0%, transparent 60%),
+      #0b1020;
+    border:8px solid #0a1024;
+    border-radius:16px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+    touch-action:none;               /* allow pointer events + prevent panning */
+  }
+
+  .hud{
+    position:fixed;
+    top: max(10px, env(safe-area-inset-top));
+    left:50%;
+    transform:translateX(-50%);
+    color:#e5e7eb;
+    font-weight:700;
+    text-shadow:0 2px 0 rgba(0,0,0,.35);
+    white-space:nowrap;
+    pointer-events:none;
+    user-select:none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(2,6,23,.25);
+    backdrop-filter: blur(6px);
+  }
+
+  /* Touch controls (only shown on touch / small screens) */
+  .controls{
+    position: fixed;
+    left: 0; right: 0;
+    bottom: 0;
+    padding:
+      12px
+      12px
+      calc(12px + env(safe-area-inset-bottom))
+      12px;
+    display:flex;
+    justify-content:space-between;
+    gap: 12px;
+    pointer-events:none; /* enable only on buttons */
+    user-select:none;
+  }
+
+  .cluster{
+    display:flex;
+    gap: 10px;
+    pointer-events:auto;
+  }
+
+  .btn{
+    width: var(--btn);
+    height: var(--btn);
+    border-radius: 16px;
+    border: 2px solid rgba(148,163,184,.35);
+    background: rgba(2,6,23,.55);
+    color: #e5e7eb;
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 1;
+    display:grid;
+    place-items:center;
+    box-shadow: 0 10px 25px rgba(0,0,0,.35);
+    touch-action:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:active,
+  .btn.isDown{
+    transform: translateY(1px);
+    background: rgba(30,41,59,.65);
+    border-color: rgba(226,232,240,.45);
+  }
+
+  .btn.big{
+    width: calc(var(--btn) * 1.2);
+    height: calc(var(--btn) * 1.2);
+    border-radius: 18px;
+    font-size: 20px;
+  }
+
+  .hint{
+    position: fixed;
+    right: 12px;
+    top: calc(52px + env(safe-area-inset-top));
+    color: rgba(226,232,240,.75);
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(2,6,23,.25);
+    padding: 6px 10px;
+    border-radius: 999px;
+    pointer-events:none;
+  }
+
+  /* Only show touch UI when appropriate */
+  @media (hover:hover) and (pointer:fine){
+    .controls, .hint{ display:none; }
+  }
 </style>
 </head>
+
 <body>
-<div class="hud" id="hud">←/→ rotate • ↑ thrust • Space shoot • Enter new game • Infinite world</div>
-<div class="wrap"><canvas id="c" width="960" height="720"></canvas></div>
+  <div class="hud" id="hud">←/→ rotate • ↑ thrust • Space shoot • Enter new game • Infinite world</div>
+  <div class="hint">Touch controls enabled</div>
+
+  <div class="wrap">
+    <canvas id="c"></canvas>
+  </div>
+
+  <!-- Touch controls -->
+  <div class="controls" id="controls">
+    <div class="cluster">
+      <button class="btn" id="btnLeft"  aria-label="Rotate left">⟲</button>
+      <button class="btn" id="btnRight" aria-label="Rotate right">⟳</button>
+      <button class="btn big" id="btnThrust" aria-label="Thrust">▲</button>
+    </div>
+    <div class="cluster">
+      <button class="btn big" id="btnShoot" aria-label="Shoot">●</button>
+      <button class="btn" id="btnNew" aria-label="New game">⏎</button>
+    </div>
+  </div>
 
 <script>
 (() => {
 'use strict';
 
-/* ===== Canvas ===== */
+/* ===== Canvas (responsive + device pixel ratio) ===== */
 const cv = document.getElementById('c');
-const ctx = cv.getContext('2d');
-const W = cv.width, H = cv.height;
+const ctx = cv.getContext('2d', { alpha: true });
+let W = 960, H = 720;        // logical (CSS pixel) size
+let DPR = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 const HUD = document.getElementById('hud');
+
+function resizeCanvas(){
+  // Maintain a 4:3 aspect ratio like the original, but fit any screen
+  const pad = 24;
+  const topHud = 70; // space for HUD
+  const bottomControls = (matchMedia('(hover:hover) and (pointer:fine)').matches) ? 10 : 140;
+
+  const availW = Math.max(320, window.innerWidth - pad);
+  const availH = Math.max(320, window.innerHeight - pad - topHud - bottomControls);
+
+  const aspect = 4/3;
+  let cssW = availW;
+  let cssH = cssW / aspect;
+  if (cssH > availH){
+    cssH = availH;
+    cssW = cssH * aspect;
+  }
+
+  DPR = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  W = Math.round(cssW);
+  H = Math.round(cssH);
+
+  cv.style.width = W + 'px';
+  cv.style.height = H + 'px';
+
+  cv.width = Math.floor(W * DPR);
+  cv.height = Math.floor(H * DPR);
+
+  // draw in logical pixels
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resizeCanvas, { passive:true });
+resizeCanvas();
 
 const TAU = Math.PI*2;
 const FPS = 60, DT = 1/FPS;
@@ -44,7 +213,7 @@ const FIRE_COOLDOWN = 0.14;    // seconds
 
 const INVULN = 2.0;            // respawn invulnerability
 const BLINK = 0.12;            // blink period during invuln
-const MAX_BULLETS = 6;
+const MAX_BULLETS = 3;
 
 const AST_SPEED = [60, 90, 120];
 const AST_RAD   = [54, 34, 20]; // big, medium, small
@@ -52,14 +221,13 @@ const AST_SCORE = [20, 50, 100];
 const AST_BOUNCE_E = 1.0;       // elasticity for rock/rock
 
 const START_LIVES = 3;
-const MAX_ENEMY_BULLETS = 6;
+const MAX_ENEMY_BULLETS = 3;
 
 /* ===== Bases on asteroids ===== */
 const BASE_R = 10;
 const BASE_BULLET_SPEED = 420;
 const BASE_BULLET_LIFE = 2.6;
-const MAX_BASE_BULLETS = 3;
-
+const MAX_BASE_BULLETS = 1;
 
 const BASE_SPAWN_CHANCE_BIG = 0.33;
 const BASE_SPAWN_CHANCE_MED = 0.18;
@@ -119,6 +287,8 @@ function makeSFX(){
     A.unlocked = true;
   }
 
+  const rand = (a,b)=> a + Math.random()*(b-a);
+  const clamp = (v,lo,hi)=> Math.max(lo, Math.min(hi,v));
   function beep({type='sine', f0=440, f1=null, t=0.08, gain=0.2, det=0, pan=0, noise=false}){
     if (!ensure()) return;
     const now = A.ctx.currentTime;
@@ -242,8 +412,63 @@ function makeSFX(){
 }
 const SFX = makeSFX();
 
-/* ===== State ===== */
+/* ===== Input (keyboard + touch) ===== */
 let keys = new Set();
+const input = { left:false, right:false, thrust:false, shoot:false };
+
+function userGestureUnlock(){ SFX.unlock(); }
+
+window.addEventListener('keydown', e=>{
+  userGestureUnlock();
+  if (e.code === 'Enter'){ if (gameOver || !started) resetGame(); }
+  keys.add(e.code);
+}, { passive:true });
+
+window.addEventListener('keyup', e=> keys.delete(e.code), { passive:true });
+
+function bindHoldButton(el, prop){
+  let activePointer = null;
+
+  const down = (ev) => {
+    userGestureUnlock();
+    ev.preventDefault();
+    ev.stopPropagation();
+    activePointer = ev.pointerId;
+    input[prop] = true;
+    el.classList.add('isDown');
+    try{ el.setPointerCapture(ev.pointerId); }catch(_){}
+  };
+
+  const up = (ev) => {
+    if (activePointer !== ev.pointerId) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    activePointer = null;
+    input[prop] = false;
+    el.classList.remove('isDown');
+  };
+
+  el.addEventListener('pointerdown', down);
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+  el.addEventListener('pointerleave', up);
+}
+
+bindHoldButton(document.getElementById('btnLeft'), 'left');
+bindHoldButton(document.getElementById('btnRight'), 'right');
+bindHoldButton(document.getElementById('btnThrust'), 'thrust');
+bindHoldButton(document.getElementById('btnShoot'), 'shoot');
+
+document.getElementById('btnNew').addEventListener('pointerdown', (e)=>{
+  userGestureUnlock();
+  e.preventDefault();
+  if (gameOver || !started) resetGame();
+}, { passive:false });
+
+// Also unlock audio on any canvas touch/click
+cv.addEventListener('pointerdown', ()=> userGestureUnlock(), { passive:true });
+
+/* ===== State ===== */
 let ship;
 let bullets = [];
 let enemyBullets = [];
@@ -276,15 +501,11 @@ function panForScreenX(sx){ return clamp((sx / W) * 2 - 1, -1, 1); }
 function worldToScreen(x,y,cam){
   return { x: x - cam.x + W/2, y: y - cam.y + H/2 };
 }
-function screenToWorld(x,y,cam){
-  return { x: x + cam.x - W/2, y: y + cam.y - H/2 };
-}
 function inView(sx,sy,margin=120){
   return sx > -margin && sx < W + margin && sy > -margin && sy < H + margin;
 }
 
 function hash2i(x,y,seed=0){
-  // 32-bit integer hash from 2 ints
   let h = (x|0) * 374761393 + (y|0) * 668265263 + (seed|0) * 1442695041;
   h = (h ^ (h >>> 13)) | 0;
   h = (h * 1274126177) | 0;
@@ -335,7 +556,6 @@ function newAsteroid(size=0, x=0, y=0, rng=Math.random){
   const vx = Math.cos(ang)*spd, vy = Math.sin(ang)*spd;
   const rA = AST_RAD[size];
 
-  // distinct colors per size
   const baseHueBySize = [36, 205, 290];
   const hue = (baseHueBySize[size] || 200) + (rng()*20 - 10);
 
@@ -354,7 +574,7 @@ function newAsteroid(size=0, x=0, y=0, rng=Math.random){
     x,y,vx,vy,a:rng()*TAU,va:(rng()*1.2 - 0.6),
     r:rA,size,hue,craters,
     base,
-    _ck:'' // chunk key
+    _ck:''
   };
 }
 
@@ -413,46 +633,26 @@ function ensureFeatureChunk(cx,cy){
   if (featChunks.has(k)) return;
   const rng = mulberry32(hash2i(cx,cy,WORLD_SEED ^ 0x9e3779b9));
   const feats = [];
-const count = 1 + ((rng()*3)|0); // 1–3 features per feature chunk (always at least 1)
+  const count = 1 + ((rng()*3)|0);
 
   for (let i=0;i<count;i++){
     const fx = (cx + rng()) * FEAT_CHUNK;
     const fy = (cy + rng()) * FEAT_CHUNK;
     const kindRoll = rng();
     if (kindRoll < 0.34){
-      feats.push({
-        kind:'planet',
-        x: fx, y: fy,
-        r: 120 + rng()*260,
-        hue: 180 + rng()*160,
-        ring: rng() < 0.35
-      });
+      feats.push({ kind:'planet', x: fx, y: fy, r: 120 + rng()*260, hue: 180 + rng()*160, ring: rng() < 0.35 });
     } else if (kindRoll < 0.72){
-      feats.push({
-        kind:'nebula',
-        x: fx, y: fy,
-        r: 240 + rng()*520,
-        hue: 220 + rng()*120,
-      });
+      feats.push({ kind:'nebula', x: fx, y: fy, r: 240 + rng()*520, hue: 220 + rng()*120 });
     } else {
-      feats.push({
-        kind:'galaxy',
-        x: fx, y: fy,
-        r: 260 + rng()*520,
-        hue: 280 + rng()*80,
-        spin: rng()<0.5 ? -1 : 1
-      });
+      feats.push({ kind:'galaxy', x: fx, y: fy, r: 260 + rng()*520, hue: 280 + rng()*80, spin: rng()<0.5 ? -1 : 1 });
     }
   }
   featChunks.set(k, feats);
 }
 
 function drawBackground(cam){
-  // deep stars (parallax)
   drawStars(cam, 0.18);
-  // large features (parallax)
   drawFeatures(cam, 0.12);
-  // near stars (slightly closer)
   drawStars(cam, 0.32);
 }
 
@@ -489,7 +689,6 @@ function drawStars(cam, par){
   ctx.globalAlpha = 1;
 }
 
-
 function drawFeatures(cam, par){
   const camx = cam.x * par;
   const camy = cam.y * par;
@@ -506,7 +705,6 @@ function drawFeatures(cam, par){
       for (const f of feats){
         const sx = (f.x - camx) + W/2;
         const sy = (f.y - camy) + H/2;
-
         if (!inView(sx,sy, Math.max(400,f.r))) continue;
 
         if (f.kind === 'planet') drawPlanet(sx,sy,f);
@@ -516,7 +714,6 @@ function drawFeatures(cam, par){
     }
   }
 }
-
 
 function drawPlanet(sx,sy,f){
   const g = ctx.createRadialGradient(sx - f.r*0.35, sy - f.r*0.35, f.r*0.15, sx, sy, f.r);
@@ -538,7 +735,6 @@ function drawPlanet(sx,sy,f){
   }
 }
 
-
 function drawNebula(sx,sy,f){
   const g = ctx.createRadialGradient(sx,sy,f.r*0.1, sx,sy,f.r);
   g.addColorStop(0, `hsla(${f.hue}, 80%, 72%, 0.26)`);
@@ -547,7 +743,6 @@ function drawNebula(sx,sy,f){
   ctx.fillStyle = g;
   ctx.beginPath(); ctx.arc(sx,sy,f.r,0,TAU); ctx.fill();
 }
-
 
 function drawGalaxy(sx,sy,f){
   ctx.save();
@@ -579,7 +774,6 @@ function drawGalaxy(sx,sy,f){
   ctx.restore();
 }
 
-
 /* ===== Chunk generation (gameplay objects) ===== */
 function ensureChunk(cx,cy){
   const k = chunkKey(cx,cy);
@@ -588,8 +782,7 @@ function ensureChunk(cx,cy){
   const rng = mulberry32(hash2i(cx,cy,WORLD_SEED));
   const objs = { key:k, cx,cy };
 
-  // asteroids
-  const baseCount = 5 + ((rng()*4)|0); // 5–8
+  const baseCount = 5 + ((rng()*4)|0);
   for (let i=0;i<baseCount;i++){
     const size = (rng()<0.55) ? 0 : (rng()<0.82 ? 1 : 2);
     const x = (cx + rng()) * CHUNK;
@@ -599,31 +792,22 @@ function ensureChunk(cx,cy){
     asteroids.push(a);
   }
 
-// enemies (reduced spawn + safe distance)
-const eRoll = rng();
-const eCount = eRoll < 0.75 ? 0 : 1; // max 1 enemy per chunk, and fewer chunks have one
+  // enemies (reduced spawn + safe distance)
+  const eRoll = rng();
+  const eCount = eRoll < 0.75 ? 0 : 1;
 
-for (let i=0;i<eCount;i++){
-  const x = (cx + rng()) * CHUNK;
-  const y = (cy + rng()) * CHUNK;
+  for (let i=0;i<eCount;i++){
+    const x = (cx + rng()) * CHUNK;
+    const y = (cy + rng()) * CHUNK;
+    if (dist(x,y, ship.x,ship.y) < 900) continue;
 
-  // don't spawn enemies too close to the player (prevents instant bullet hell at start)
-  if (dist(x,y, ship.x,ship.y) < 900) continue;
+    const typeKey = (rng()<0.60) ? 'SCOUT' : (rng()<0.92 ? 'HUNTER' : 'BOMBER');
+    const e = newEnemy(typeKey, x, y, rng);
+    e.fire = 1.6 + rng()*1.6;
+    e._ck = k;
+    enemies.push(e);
+  }
 
-  // bias away from BOMBER
-  const typeKey = (rng()<0.60) ? 'SCOUT' : (rng()<0.92 ? 'HUNTER' : 'BOMBER');
-
-  const e = newEnemy(typeKey, x, y, rng);
-
-  // delay first shot so they don't all fire immediately when you enter range
-  e.fire = 1.6 + rng()*1.6;
-
-  e._ck = k;
-  enemies.push(e);
-}
-
-
-  // occasional powerup
   if (rng() < 0.22){
     const x = (cx + rng()) * CHUNK;
     const y = (cy + rng()) * CHUNK;
@@ -639,23 +823,19 @@ function streamWorld(){
   const pcx = chunkCoord(ship.x);
   const pcy = chunkCoord(ship.y);
 
-  // ensure active radius
   for (let dx=-ACTIVE_RADIUS; dx<=ACTIVE_RADIUS; dx++){
     for (let dy=-ACTIVE_RADIUS; dy<=ACTIVE_RADIUS; dy++){
       ensureChunk(pcx+dx, pcy+dy);
     }
   }
 
-  // cull far chunks + their objects
   for (const k of chunks.keys()){
     const [cx,cy] = k.split(',').map(Number);
     if (Math.abs(cx - pcx) > CULL_RADIUS || Math.abs(cy - pcy) > CULL_RADIUS){
       chunks.delete(k);
-      // remove objects belonging to that chunk
       asteroids = asteroids.filter(o => o._ck !== k);
       enemies = enemies.filter(o => o._ck !== k);
       powerups = powerups.filter(o => o._ck !== k);
-      // bullets / particles can persist without chunk ownership; keep them
     }
   }
 }
@@ -703,7 +883,6 @@ function destroyBase(a, x, y, cam){
 function explodeAsteroid(idx, cam){
   const a = asteroids[idx];
 
-  // base also explodes if present
   if (a.base && a.base.alive){
     const bp = baseWorldPos(a);
     destroyBase(a, bp.x, bp.y, cam);
@@ -736,7 +915,6 @@ function damageEnemy(e, cam){
     score += ENEMY_TYPES[e.type].score;
     SFX.explosion(1, panForScreenX(sp.x));
     puff(e.x,e.y, 24, '#86efac');
-    // remove
     const i = enemies.indexOf(e);
     if (i>=0) enemies.splice(i,1);
   } else {
@@ -763,37 +941,29 @@ function resetGame(){
   prevThrust = false;
   SFX.thrust(false);
 
-  // seed initial area
   streamWorld();
 }
-
-/* ===== Input ===== */
-function userGestureUnlock(){ SFX.unlock(); }
-window.addEventListener('keydown', e=>{
-  userGestureUnlock();
-  if (e.code === 'Enter'){ if (gameOver || !started) resetGame(); }
-  keys.add(e.code);
-});
-window.addEventListener('keyup', e=> keys.delete(e.code));
-cv.addEventListener('pointerdown', ()=> userGestureUnlock(), {passive:true});
 
 /* ===== Update loop ===== */
 function update(dt){
   if (gameOver) return;
 
   const cam = { x: ship.x, y: ship.y };
-let shotsThisFrame = 0;
-let baseShotsThisFrame = 0;
+  let shotsThisFrame = 0;
+  let baseShotsThisFrame = 0;
 
-  // stream nearby world
   streamWorld();
 
-  /* Ship control */
-  if (keys.has('ArrowLeft') || keys.has('KeyA')) ship.a -= SHIP_ROT*dt;
-  if (keys.has('ArrowRight')|| keys.has('KeyD')) ship.a += SHIP_ROT*dt;
-  ship.thrust = (keys.has('ArrowUp') || keys.has('KeyW'));
+  /* Ship control (keyboard OR touch) */
+  const turnLeft  = input.left  || keys.has('ArrowLeft') || keys.has('KeyA');
+  const turnRight = input.right || keys.has('ArrowRight')|| keys.has('KeyD');
+  const wantThrust = input.thrust || keys.has('ArrowUp') || keys.has('KeyW');
+  const wantShoot  = input.shoot  || keys.has('Space')   || keys.has('Numpad0');
 
-  // thrust sound
+  if (turnLeft)  ship.a -= SHIP_ROT*dt;
+  if (turnRight) ship.a += SHIP_ROT*dt;
+  ship.thrust = wantThrust;
+
   if (ship.thrust !== prevThrust){
     SFX.thrust(ship.thrust);
     prevThrust = ship.thrust;
@@ -818,7 +988,7 @@ let baseShotsThisFrame = 0;
 
   /* Fire */
   fireTimer -= dt;
-  if (fireTimer<=0 && (keys.has('Space') || keys.has('Numpad0'))){
+  if (fireTimer<=0 && wantShoot){
     const maxB = currentMaxBullets();
     if (bullets.length < maxB){
       if (weapon.mode === 'SPREAD'){
@@ -850,21 +1020,17 @@ let baseShotsThisFrame = 0;
     if (b.t <= 0) enemyBullets.splice(i,1);
   }
 
-/* Collisions: enemy bullets vs asteroids (bullets are blocked, asteroids are NOT damaged) */
-for (let i = enemyBullets.length - 1; i >= 0; i--){
-  const b = enemyBullets[i];
-
-  // optional cheap-out: ignore far-away bullets
-  if (dist(b.x,b.y, ship.x,ship.y) > 1600) continue;
-
-  for (const a of asteroids){
-    if (dist(a.x,a.y, b.x,b.y) < a.r){
-      enemyBullets.splice(i, 1); // bullet stops on rock
-      break;
+  /* Collisions: enemy bullets vs asteroids (bullets are blocked; asteroids NOT damaged) */
+  for (let i = enemyBullets.length - 1; i >= 0; i--){
+    const b = enemyBullets[i];
+    if (dist(b.x,b.y, ship.x,ship.y) > 1600) continue;
+    for (const a of asteroids){
+      if (dist(a.x,a.y, b.x,b.y) < a.r){
+        enemyBullets.splice(i, 1);
+        break;
+      }
     }
   }
-}
-
 
   /* Base bullets update */
   for (let i=baseBullets.length-1;i>=0;i--){
@@ -878,12 +1044,9 @@ for (let i = enemyBullets.length - 1; i >= 0; i--){
   for (const a of asteroids){
     a.x += a.vx*dt; a.y += a.vy*dt; a.a += a.va*dt;
 
-  if (a.base && a.base.alive && dist(a.x,a.y, ship.x,ship.y) < 900){
-
+    if (a.base && a.base.alive && dist(a.x,a.y, ship.x,ship.y) < 900){
       a.base.fire -= dt;
-if (a.base.fire <= 0 && baseBullets.length < MAX_BASE_BULLETS && baseShotsThisFrame < 1){
-
-
+      if (a.base.fire <= 0 && baseBullets.length < MAX_BASE_BULLETS && baseShotsThisFrame < 1){
         const bp = baseWorldPos(a);
         const aim = angleTo(bp.x, bp.y, ship.x, ship.y);
         const err = rad(Math.max(3, 16));
@@ -898,14 +1061,12 @@ if (a.base.fire <= 0 && baseBullets.length < MAX_BASE_BULLETS && baseShotsThisFr
         SFX.baseShoot(panForScreenX(sp.x));
 
         baseShotsThisFrame++;
-
-a.base.fire = clamp(1.85 + rand(-0.20,0.20), 0.9, 2.3);
-
+        a.base.fire = clamp(1.85 + rand(-0.20,0.20), 0.9, 2.3);
       }
     }
   }
 
-  /* Asteroid–asteroid collisions (only if close to camera to keep it cheap) */
+  /* Asteroid–asteroid collisions (only if close to camera) */
   const nearAst = asteroids.filter(a => dist(a.x,a.y, ship.x,ship.y) < 900);
   for (let i=0;i<nearAst.length;i++){
     for (let j=i+1;j<nearAst.length;j++){
@@ -913,120 +1074,93 @@ a.base.fire = clamp(1.85 + rand(-0.20,0.20), 0.9, 2.3);
     }
   }
 
-  /* Enemies update (variety AI) */
-const activeShooters = enemies
-  .slice()
-  .sort((a,b)=> dist(a.x,a.y, ship.x,ship.y) - dist(b.x,b.y, ship.x,ship.y))
-  .slice(0, MAX_ACTIVE_SHOOTERS);
+  /* Enemies update */
+  const activeShooters = enemies
+    .slice()
+    .sort((a,b)=> dist(a.x,a.y, ship.x,ship.y) - dist(b.x,b.y, ship.x,ship.y))
+    .slice(0, MAX_ACTIVE_SHOOTERS);
 
-for (const e of enemies){
-
+  for (const e of enemies){
     const T = ENEMY_TYPES[e.type];
     const dx = ship.x - e.x, dy = ship.y - e.y;
     const d = Math.hypot(dx,dy) || 1;
 
-    // steering:
-    // SCOUT: swoop past and strafe
-    // HUNTER: track more directly
-    // BOMBER: keep distance, fire spreads
     let desired = angleTo(e.x,e.y, ship.x,ship.y);
 
     if (e.type === 'SCOUT'){
-      // aim offset to create fly-bys
       desired += (d < 520 ? rad(90) : rad(20)) * (Math.sin(e.wander) > 0 ? 1 : -1);
       e.wander += dt * 0.9;
     } else if (e.type === 'BOMBER'){
-      // try to stay ~650 away
       if (d < 620) desired += rad(180);
       e.wander += dt * 0.5;
       desired += rad(12) * Math.sin(e.wander);
     } else {
-      // hunter slight wiggle
       e.wander += dt * 0.7;
       desired += rad(6) * Math.sin(e.wander);
     }
 
-    // turn toward desired
     let da = (desired - e.a);
     da = Math.atan2(Math.sin(da), Math.cos(da));
     e.a += clamp(da, -T.turn*dt, T.turn*dt);
 
-    // accelerate toward heading
     const ax = Math.cos(e.a) * T.speed;
     const ay = Math.sin(e.a) * T.speed;
     const accel = (e.type === 'BOMBER') ? 0.55 : 0.75;
     e.vx += ax * accel * dt * 0.35;
     e.vy += ay * accel * dt * 0.35;
 
-    // mild damping
     e.vx *= 0.995;
     e.vy *= 0.995;
 
     e.x += e.vx*dt;
     e.y += e.vy*dt;
 
-// fire (only when enemy is near the player)
-const nearPlayer = dist(e.x,e.y, ship.x,ship.y) < 900;
+    const nearPlayer = dist(e.x,e.y, ship.x,ship.y) < 900;
 
-if (nearPlayer && activeShooters.includes(e)){
+    if (nearPlayer && activeShooters.includes(e)){
+      e.fire -= dt;
 
-  e.fire -= dt;
+      if (e.fire <= 0 && shotsThisFrame < 2){
+        const room = MAX_ENEMY_BULLETS - enemyBullets.length;
+        const aim = angleTo(e.x,e.y, ship.x,ship.y);
+        const err = rad(T.errDeg);
+        const sp = worldToScreen(e.x,e.y,cam);
+        const pan = panForScreenX(sp.x);
 
-if (e.fire <= 0 && shotsThisFrame < 2){
-
-    // HARD CAP: never allow enemy bullet count to exceed MAX_ENEMY_BULLETS
-    const room = MAX_ENEMY_BULLETS - enemyBullets.length;
-
-    const aim = angleTo(e.x,e.y, ship.x,ship.y);
-    const err = rad(T.errDeg);
-    const sp = worldToScreen(e.x,e.y,cam);
-    const pan = panForScreenX(sp.x);
-
-    if (e.type === 'BOMBER'){
-      // 3-shot burst (only if there's room for all 3)
-      if (room >= 3){
-        const spread = rad(10);
-        for (const off of [-spread,0,spread]){
-          const ang = aim + off + rand(-err,err);
-          enemyBullets.push({
-            x:e.x, y:e.y,
-vx: Math.cos(ang)*T.bullet*ENEMY_BULLET_SPEED_MUL,
-vy: Math.sin(ang)*T.bullet*ENEMY_BULLET_SPEED_MUL,
-
-            t: ENEMY_BULLET_LIFE
-          });
+        if (e.type === 'BOMBER'){
+          if (room >= 3){
+            const spread = rad(10);
+            for (const off of [-spread,0,spread]){
+              const ang = aim + off + rand(-err,err);
+              enemyBullets.push({
+                x:e.x, y:e.y,
+                vx: Math.cos(ang)*T.bullet*ENEMY_BULLET_SPEED_MUL,
+                vy: Math.sin(ang)*T.bullet*ENEMY_BULLET_SPEED_MUL,
+                t: ENEMY_BULLET_LIFE
+              });
+            }
+            SFX.enemyShoot(pan);
+            shotsThisFrame++;
+          }
+        } else {
+          if (room >= 1){
+            const ang = aim + rand(-err,err);
+            enemyBullets.push({
+              x:e.x, y:e.y,
+              vx: Math.cos(ang)*T.bullet*ENEMY_BULLET_SPEED_MUL,
+              vy: Math.sin(ang)*T.bullet*ENEMY_BULLET_SPEED_MUL,
+              t: ENEMY_BULLET_LIFE
+            });
+            SFX.enemyShoot(pan);
+            shotsThisFrame++;
+          }
         }
-        SFX.enemyShoot(pan);
-        shotsThisFrame++;
 
+        e.fire = (T.fireMin + Math.random()*(T.fireMax - T.fireMin)) * 1.35;
       }
     } else {
-      // single shot (only if there's room)
-      if (room >= 1){
-        const ang = aim + rand(-err,err);
-        enemyBullets.push({
-          x:e.x, y:e.y,
-vx: Math.cos(ang)*T.bullet*ENEMY_BULLET_SPEED_MUL,
-vy: Math.sin(ang)*T.bullet*ENEMY_BULLET_SPEED_MUL,
-
-          t: ENEMY_BULLET_LIFE
-        });
-        SFX.enemyShoot(pan);
-        shotsThisFrame++;
-
-      }
+      e.fire = Math.min(e.fire, 0.35);
     }
-
-    // always reset fire timer (so they don't spam attempts every frame)
-e.fire = (T.fireMin + Math.random()*(T.fireMax - T.fireMin)) * 1.35;
-
-  }
-} else {
-  // Don't allow enemies to “bank” a shot while far away/off-screen
-  e.fire = Math.min(e.fire, 0.35);
-}
-
-
   }
 
   /* Powerups update */
@@ -1043,7 +1177,6 @@ e.fire = (T.fireMin + Math.random()*(T.fireMax - T.fireMin)) * 1.35;
 
     p.x += p.vx*dt; p.y += p.vy*dt;
 
-    // pickup
     if (dist(p.x,p.y, ship.x,ship.y) < POWERUP_R + SHIP_R*0.75){
       weapon.mode = POWER_TYPES[p.idx].key;
       weapon.t = POWERUP_DURATION;
@@ -1174,7 +1307,6 @@ function draw(){
 
   const cam = { x: ship.x, y: ship.y };
 
-  // background (procedural, parallax)
   drawBackground(cam);
 
   // bullets (player)
@@ -1248,7 +1380,6 @@ function draw(){
   ctx.textAlign = 'left';
   ctx.fillText('Score: ' + score, 16, 28);
 
-  // weapon status
   const wTxt = weapon.mode === 'NORMAL'
     ? 'Weapon: NORMAL'
     : `Weapon: ${weapon.mode} (${Math.ceil(weapon.t)}s)`;
@@ -1256,20 +1387,18 @@ function draw(){
   ctx.fillStyle = '#cbd5e1';
   ctx.fillText(wTxt, 16, 52);
 
-  // lives
   for (let i=0;i<Math.max(0,lives);i++){
     drawShip(140 + i*26, 38, -Math.PI/2, 10, true);
   }
 
-  // coords (tiny, optional feel of world)
   ctx.fillStyle = '#94a3b8';
   ctx.font = '600 12px system-ui,-apple-system,Segoe UI,Roboto,Arial';
   ctx.fillText(`X: ${Math.round(ship.x)}  Y: ${Math.round(ship.y)}`, 16, 72);
 
   if (gameOver){
-    message('GAME OVER', 'Press Enter for new game');
+    message('GAME OVER', 'Press Enter or tap ⏎ for new game');
   } else if (!started){
-    message('ASTEROIDS INFINITE', '←/→ rotate • ↑ thrust • Space shoot • Enter new game');
+    message('ASTEROIDS INFINITE', 'Keyboard or touch controls • Tap ⏎ to start');
   }
 }
 
@@ -1319,8 +1448,6 @@ function drawEnemy(e, cam){
   ctx.save();
   ctx.translate(s.x,s.y);
   ctx.rotate(e.a);
-
-  // different silhouettes per type
   ctx.lineWidth = 2.5;
 
   if (e.type === 'SCOUT'){
@@ -1333,8 +1460,6 @@ function drawEnemy(e, cam){
     ctx.lineTo(-10,-10);
     ctx.closePath();
     ctx.fill(); ctx.stroke();
-
-    // wing tips
     ctx.beginPath(); ctx.moveTo(-6,0); ctx.lineTo(-18,0); ctx.stroke();
   } else if (e.type === 'HUNTER'){
     ctx.strokeStyle = '#22c55e';
@@ -1346,23 +1471,19 @@ function drawEnemy(e, cam){
     ctx.arc(6,-2, 4, 0, TAU);
     ctx.stroke();
   } else {
-    // BOMBER
     ctx.strokeStyle = '#86efac';
     ctx.fillStyle = 'rgba(20,83,45,0.22)';
     ctx.beginPath();
     ctx.ellipse(0,0, 22, 14, 0, 0, TAU);
     ctx.fill(); ctx.stroke();
-    // payload pod
     ctx.beginPath();
     ctx.ellipse(-10,0, 8, 6, 0, 0, TAU);
     ctx.stroke();
-    // fins
     ctx.beginPath();
     ctx.moveTo(8,0); ctx.lineTo(18,6); ctx.lineTo(18,-6); ctx.closePath();
     ctx.stroke();
   }
 
-  // hp pips
   ctx.restore();
   ctx.save();
   ctx.translate(s.x, s.y - (T.r + 14));
