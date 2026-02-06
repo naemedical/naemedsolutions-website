@@ -64,6 +64,7 @@
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
+            cursor: pointer;
         }
 
         .nav-links a:hover {
@@ -92,7 +93,7 @@
             background: #1a365d;
             border-radius: 5px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            min-width: 180px;
+            min-width: 220px;
             list-style: none;
             padding: 10px 0;
             margin-top: 10px;
@@ -633,9 +634,12 @@
        <li><a onclick="showPage('home'); scrollToSection('contact')">Contact</a></li>
 
 <li class="dropdown">
-  <a onclick="toggleFunDropdown(event)">Fun ▼</a>
+  <a onclick="toggleFunDropdown(event)">Documents ▼</a>
   <ul class="dropdown-menu" id="funDropdown">
-    <li><a href="asteroids.html" target="_blank">Rocks</a></li>
+    <li><a href="ophubdocumentation.pdf" target="_blank">OpHub Documentation</a></li>
+    <li><a href="ophubvpat.pdf" target="_blank">OpHub VPAT</a></li>
+    <li><a href="medcalcdocumentation.pdf" target="_blank">MedCalc Documentation</a></li>
+    <li><a href="medcalcvpat.pdf" target="_blank">MedCalc VPAT</a></li>
   </ul>
 </li>
 
@@ -731,7 +735,7 @@ Centralize 24-hour reports, staffing visibility, census tracking, and on-call co
                         <p>Neonate through Adult Medication Dosing Tool</p>
                     </div>
                     <div class="solution-body">
-<p>Your formulary, your doses. Staff enter what they have—age, height, or weight—and the system applies validated clinical formulas to estimate weight when it isn’t available, then calculates medication doses using standard dosing math. No searching, no guesswork, just fast answers built around your specific medications.</p>
+<p>Your formulary, your doses. Staff enter what they have—age, height, or weight—and the system applies validated clinical formulas to estimate weight when it isn't available, then calculates medication doses using standard dosing math. No searching, no guesswork, just fast answers built around your specific medications.</p>
                         <div class="solution-buttons">
                        <a href="https://medcalc.naemedsolutions.com" class="solution-btn demo-btn" target="_blank">🎮 Try Demo</a>
                             <button class="solution-btn" onclick="showOverlay('medcalc-overlay')">Learn More</button>
@@ -954,7 +958,11 @@ document.addEventListener('click', function() {
         // Form submission handler (placeholder - needs backend)
         function handleSubmit(e) {
             e.preventDefault();
-fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(e.target))) }).then(r => r.ok ? alert("Message sent!") : r.text().then(t => alert("Error: " + t))).catch(err => alert("Error: " + err));
+            const btn = e.target.querySelector('.submit-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(e.target))) }).then(r => { btn.textContent = originalText; btn.disabled = false; if (r.ok) { alert("Message sent!"); e.target.reset(); } else { r.text().then(t => alert("Error: " + t)); } }).catch(err => { btn.textContent = originalText; btn.disabled = false; alert("Error: " + err); });
 
         }
 
@@ -987,4 +995,3 @@ function scrollToSection(sectionId) {
     </script>
 </body>
 </html>
-       
