@@ -633,9 +633,12 @@
        <li><a onclick="showPage('home'); scrollToSection('contact')">Contact</a></li>
 
 <li class="dropdown">
-  <a onclick="toggleFunDropdown(event)">Fun ▼</a>
+  <a onclick="toggleFunDropdown(event)">Documents ▼</a>
   <ul class="dropdown-menu" id="funDropdown">
-    <li><a href="asteroids.html" target="_blank">Rocks</a></li>
+    <li><a href="ophubdocumentation.pdf" target="_blank">OpHub Documentation</a></li>
+    <li><a href="ophubvpat.pdf" target="_blank">OpHub VPAT</a></li>
+    <li><a href="medcalcdocumentation.pdf" target="_blank">MedCalc Documentation</a></li>
+    <li><a href="medcalcvpat.pdf" target="_blank">MedCalc VPAT</a></li>
   </ul>
 </li>
 
@@ -764,7 +767,7 @@ Centralize 24-hour reports, staffing visibility, census tracking, and on-call co
                         <span class="email-icon">✉️</span>
                         <div>
                             <strong>Email Us</strong><br>
-                            <a href="mailto:info@naemedsolutions.com">info@naemedsolutions.com</a>
+                            <a href="/cdn-cgi/l/email-protection#4f262129200f212e2a222a2b3c20233a3b2620213c612c2022"><span class="__cf_email__" data-cfemail="4d24232b220d232c282028293e222138392422233e632e2220">[email&#160;protected]</span></a>
                         </div>
                     </div>
                 </div>
@@ -894,7 +897,7 @@ Centralize 24-hour reports, staffing visibility, census tracking, and on-call co
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // Mobile menu toggle
         function toggleMenu() {
             document.getElementById('navLinks').classList.toggle('active');
@@ -977,15 +980,3 @@ function scrollToSection(sectionId) {
     const offset = navbar ? navbar.offsetHeight + 10 : 0;
 
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
-    window.scrollTo({ top: y, behavior: 'smooth' });
-
-    // Close mobile menu if open
-    const navLinks = document.getElementById('navLinks');
-    if (navLinks) navLinks.classList.remove('active');
-  });
-}
-    </script>
-</body>
-</html>
-       
-
