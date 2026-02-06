@@ -93,7 +93,7 @@
             background: #1a365d;
             border-radius: 5px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            min-width: 230px;
+            min-width: 180px;
             list-style: none;
             padding: 10px 0;
             margin-top: 10px;
@@ -634,8 +634,8 @@
        <li><a onclick="showPage('home'); scrollToSection('contact')">Contact</a></li>
 
 <li class="dropdown">
-  <a onclick="toggleDocsDropdown(event)">Documents ▼</a>
-  <ul class="dropdown-menu" id="docsDropdown">
+  <a onclick="toggleFunDropdown(event)">Documents ▼</a>
+  <ul class="dropdown-menu" id="funDropdown">
     <li><a href="ophubdocumentation.pdf" target="_blank">OpHub Documentation</a></li>
     <li><a href="ophubvpat.pdf" target="_blank">OpHub VPAT</a></li>
     <li><a href="medcalcdocumentation.pdf" target="_blank">MedCalc Documentation</a></li>
@@ -768,7 +768,7 @@ Centralize 24-hour reports, staffing visibility, census tracking, and on-call co
                         <span class="email-icon">✉️</span>
                         <div>
                             <strong>Email Us</strong><br>
-                            <a href="/cdn-cgi/l/email-protection#4f262129200f212e2a222a2b3c20233a3b2620213c612c2022"><span class="__cf_email__" data-cfemail="4d24232b220d232c282028293e222138392422233e632e2220">[email&#160;protected]</span></a>
+                            <a href="/cdn-cgi/l/email-protection#20494e464f604e41454d4544534f4c5554494f4e530e434f4d"><span class="__cf_email__" data-cfemail="b4dddad2dbf4dad5d1d9d1d0c7dbd8c1c0dddbdac79ad7dbd9">[email&#160;protected]</span></a>
                         </div>
                     </div>
                 </div>
@@ -898,7 +898,7 @@ Centralize 24-hour reports, staffing visibility, census tracking, and on-call co
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // Mobile menu toggle
         function toggleMenu() {
             document.getElementById('navLinks').classList.toggle('active');
@@ -910,10 +910,10 @@ function toggleDropdown(event) {
     document.getElementById('appsDropdown').classList.toggle('show');
 }
 
-// Documents dropdown toggle
-function toggleDocsDropdown(event) {
+// Fun dropdown toggle
+function toggleFunDropdown(event) {
     event.stopPropagation();
-    document.getElementById('docsDropdown').classList.toggle('show');
+    document.getElementById('funDropdown').classList.toggle('show');
 }
 
 
@@ -922,8 +922,8 @@ document.addEventListener('click', function() {
     const apps = document.getElementById('appsDropdown');
     if (apps) apps.classList.remove('show');
 
-    const docs = document.getElementById('docsDropdown');
-    if (docs) docs.classList.remove('show');
+    const fun = document.getElementById('funDropdown');
+    if (fun) fun.classList.remove('show');
 });
 
 
