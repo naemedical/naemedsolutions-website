@@ -64,6 +64,7 @@
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
+            cursor: pointer;
         }
 
         .nav-links a:hover {
@@ -92,7 +93,7 @@
             background: #1a365d;
             border-radius: 5px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            min-width: 180px;
+            min-width: 230px;
             list-style: none;
             padding: 10px 0;
             margin-top: 10px;
@@ -633,8 +634,8 @@
        <li><a onclick="showPage('home'); scrollToSection('contact')">Contact</a></li>
 
 <li class="dropdown">
-  <a onclick="toggleFunDropdown(event)">Documents ▼</a>
-  <ul class="dropdown-menu" id="funDropdown">
+  <a onclick="toggleDocsDropdown(event)">Documents ▼</a>
+  <ul class="dropdown-menu" id="docsDropdown">
     <li><a href="ophubdocumentation.pdf" target="_blank">OpHub Documentation</a></li>
     <li><a href="ophubvpat.pdf" target="_blank">OpHub VPAT</a></li>
     <li><a href="medcalcdocumentation.pdf" target="_blank">MedCalc Documentation</a></li>
@@ -909,10 +910,10 @@ function toggleDropdown(event) {
     document.getElementById('appsDropdown').classList.toggle('show');
 }
 
-// Fun dropdown toggle
-function toggleFunDropdown(event) {
+// Documents dropdown toggle
+function toggleDocsDropdown(event) {
     event.stopPropagation();
-    document.getElementById('funDropdown').classList.toggle('show');
+    document.getElementById('docsDropdown').classList.toggle('show');
 }
 
 
@@ -921,8 +922,8 @@ document.addEventListener('click', function() {
     const apps = document.getElementById('appsDropdown');
     if (apps) apps.classList.remove('show');
 
-    const fun = document.getElementById('funDropdown');
-    if (fun) fun.classList.remove('show');
+    const docs = document.getElementById('docsDropdown');
+    if (docs) docs.classList.remove('show');
 });
 
 
