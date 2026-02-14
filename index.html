@@ -830,7 +830,7 @@ Centralize 24-hour reports, staffing visibility, census tracking, and on-call co
                 <div class="overlay-price-item">
                     <span class="price-label">Application</span>
                     <span class="price-amount">$99</span>
-                    <span class="price-note">includes full documentation &amp; quickstart guide</span>
+                    <span class="price-note">per month · includes full documentation &amp; quickstart guide</span>
                 </div>
                 <div class="overlay-price-item">
                     <span class="price-label">Onboarding (Optional)</span>
@@ -873,7 +873,7 @@ Centralize 24-hour reports, staffing visibility, census tracking, and on-call co
                 <div class="overlay-price-item">
                     <span class="price-label">Application</span>
                     <span class="price-amount">$99</span>
-                    <span class="price-note">includes full documentation &amp; quickstart guide</span>
+                    <span class="price-note">per month · includes full documentation &amp; quickstart guide</span>
                 </div>
                 <div class="overlay-price-item">
                     <span class="price-label">Onboarding (Optional)</span>
@@ -885,7 +885,8 @@ Centralize 24-hour reports, staffing visibility, census tracking, and on-call co
         </div>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script>
 // Mobile menu toggle
         function toggleMenu() {
             document.getElementById('navLinks').classList.toggle('active');
@@ -971,4 +972,14 @@ function scrollToSection(sectionId) {
     const navbar = document.querySelector('.navbar');
     const offset = navbar ? navbar.offsetHeight + 10 : 0;
 
-    const y = target.getBoundingClientRect().top + window.pageYOffset - of
+    const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+
+    // Close mobile menu if open
+    const navLinks = document.getElementById('navLinks');
+    if (navLinks) navLinks.classList.remove('active');
+  });
+}
+    </script>
+</body>
+</html>
